@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+/front-end/node_modules/
+/back-end/node_modules/
+/back-end/chat_app/venv/
+__pycache__/
+*.py[cod]
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# Build outputs
+/front-end/build/
+/front-end/dist/
+/back-end/build/
+/back-end/dist/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Django specific
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+static/
+
+# Testing
+/coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Misc
+*.bak
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db 

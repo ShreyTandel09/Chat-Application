@@ -1,0 +1,149 @@
+import React, { useState } from 'react';
+import NavigationBar from '../Layout/Navbar';
+import Footer from '../Layout/Footer';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faCircle } from '@fortawesome/free-solid-svg-icons';
+import { Message, User } from '../../types';
+import { dummyMessages, dummyUsers } from '../../data/dummyData';
+
+const ChatLayout: React.FC = () => {
+    const [messages, setMessages] = useState<Message[]>(dummyMessages);
+    const [newMessage, setNewMessage] = useState<string>('');
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim() && selectedUser) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const newMsg: Message = {
+                id: messages.length + 1,
+                senderId: currentUser.id,
+                content: newMessage,
+                timestamp: new Date()
+            };
+            setMessages([...messages, newMsg]);
+            setNewMessage('');
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('currentUser');
+        window.location.href = '/login';
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'online': return '#28a745';
+            case 'away': return '#ffc107';
+            default: return '#dc3545';
+        }
+    };
+
+    const filteredMessages = selectedUser
+        ? messages.filter(msg =>
+            msg.senderId === selectedUser.id ||
+            msg.senderId === JSON.parse(localStorage.getItem('currentUser') || '{}').id
+        )
+        : [];
+
+    return (
+        <div className="app">
+            <NavigationBar onLogout={handleLogout} />
+            <div className="main-container">
+                {/* Left Sidebar - Contact List */}
+                <div className="left-sidebar">
+                    <div className="sidebar-header">
+                        <h5 className="m-3">Contacts</h5>
+                    </div>
+                    <div className="contacts-list">
+                        {dummyUsers.map(user => (
+                            <div
+                                key={user.id}
+                                className={`contact-item ${selectedUser?.id === user.id ? 'active' : ''}`}
+                                onClick={() => setSelectedUser(user as User)}
+                            >
+                                <FontAwesomeIcon icon={faUser} className="me-2" />
+                                <span>{user.name}</span>
+                                <FontAwesomeIcon
+                                    icon={faCircle}
+                                    className="ms-auto"
+                                    style={{
+                                        color: getStatusColor(user.status || 'offline'),
+                                        fontSize: '0.5rem'
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Main Chat Area */}
+                <main className="content">
+                    {selectedUser ? (
+                        <div className="chat-container">
+                            <div className="chat-header">
+                                <h6 className="m-3">
+                                    Chatting with {selectedUser.name}
+                                    <span className="ms-2" style={{ fontSize: '0.8rem', color: getStatusColor(selectedUser.status || 'offline') }}>
+                                        ● {selectedUser.status}
+                                    </span>
+                                </h6>
+                            </div>
+                            <div className="messages">
+                                {filteredMessages.map(msg => (
+                                    <div key={msg.id} className={`message ${msg.senderId === JSON.parse(localStorage.getItem('currentUser') || '{}').id ? 'sent' : 'received'}`}>
+                                        <div className="message-content">{msg.content}</div>
+                                        <div className="message-time">
+                                            {new Date(msg.timestamp).toLocaleTimeString()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="message-input">
+                                <input
+                                    type="text"
+                                    placeholder="Type a message..."
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                />
+                                <button className="btn btn-primary" onClick={handleSendMessage}>
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="chat-container d-flex align-items-center justify-content-center">
+                            <div className="text-center text-muted">
+                                <FontAwesomeIcon icon={faUser} size="3x" className="mb-3" />
+                                <h5>Select a contact to start chatting</h5>
+                            </div>
+                        </div>
+                    )}
+                </main>
+
+                {/* Right Sidebar - Online Users */}
+                <div className="right-sidebar">
+                    <div className="sidebar-header">
+                        <h5 className="m-3">Online Users</h5>
+                    </div>
+                    <div className="online-users">
+                        {dummyUsers.filter(user => user.status === 'online').map(user => (
+                            <div key={user.id} className="user-item">
+                                <FontAwesomeIcon icon={faUser} className="me-2" />
+                                <span>{user.name}</span>
+                                <FontAwesomeIcon
+                                    icon={faCircle}
+                                    className="ms-auto"
+                                    style={{ color: '#28a745', fontSize: '0.5rem' }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <Footer />
+        </div>
+    );
+};
+
+export default ChatLayout; 
