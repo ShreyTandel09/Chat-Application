@@ -14,6 +14,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
     const [messages, setMessages] = useState<Message[]>(dummyMessages);
     const [newMessage, setNewMessage] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
     // Get initial sidebar state from localStorage or default to false
     const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(() => {
@@ -25,6 +26,15 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
     useEffect(() => {
         localStorage.setItem('sidebarCollapsed', JSON.stringify(isLeftSidebarCollapsed));
     }, [isLeftSidebarCollapsed]);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    // Scroll to bottom when messages change
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const handleSendMessage = () => {
         if (newMessage.trim() && selectedUser) {
@@ -75,7 +85,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                 <div className={`left-sidebar ${isLeftSidebarCollapsed ? 'collapsed' : ''}`}>
                     <div className="sidebar-header">
                         <div className="d-flex align-items-center">
-                            <h5 className="m-3">Contacts</h5>
+                            <h5 className="m-3">Users</h5>
                             <FontAwesomeIcon
                                 icon={faBars}
                                 className="ms-auto me-3"
@@ -129,6 +139,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                                         </div>
                                     </div>
                                 ))}
+                                <div ref={messagesEndRef} />
                             </div>
                             <div className="message-input">
                                 <input
@@ -173,7 +184,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                     </div>
                 </div>
             </div>
-            <Footer />
+            {/* <Footer /> */}
         </div>
     );
 };
