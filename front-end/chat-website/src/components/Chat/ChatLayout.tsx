@@ -1,15 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import NavigationBar from '../Layout/Navbar';
 import Footer from '../Layout/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faCircle } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faCircle, faBars } from '@fortawesome/free-solid-svg-icons';
 import { Message, User } from '../../types';
 import { dummyMessages, dummyUsers } from '../../data/dummyData';
 
-const ChatLayout: React.FC = () => {
+interface ChatLayoutProps {
+    onLogout: () => void;
+}
+
+const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
     const [messages, setMessages] = useState<Message[]>(dummyMessages);
     const [newMessage, setNewMessage] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+    // Get initial sidebar state from localStorage or default to false
+    const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(() => {
+        const saved = localStorage.getItem('sidebarCollapsed');
+        return saved ? JSON.parse(saved) : false;
+    });
+
+    // Save sidebar state to localStorage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('sidebarCollapsed', JSON.stringify(isLeftSidebarCollapsed));
+    }, [isLeftSidebarCollapsed]);
 
     const handleSendMessage = () => {
         if (newMessage.trim() && selectedUser) {
@@ -23,11 +38,6 @@ const ChatLayout: React.FC = () => {
             setMessages([...messages, newMsg]);
             setNewMessage('');
         }
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('currentUser');
-        window.location.href = '/login';
     };
 
     const getStatusColor = (status: string) => {
@@ -45,14 +55,34 @@ const ChatLayout: React.FC = () => {
         )
         : [];
 
+    const toggleLeftSidebar = () => {
+        setIsLeftSidebarCollapsed((prev: boolean) => !prev);
+    };
+
     return (
-        <div className="app">
-            <NavigationBar onLogout={handleLogout} />
+        <div className={`app ${isLeftSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+            <NavigationBar onLogout={onLogout} />
             <div className="main-container">
+                {/* Toggle button for collapsed state */}
+                <div
+                    className="sidebar-toggle-button"
+                    onClick={toggleLeftSidebar}
+                >
+                    <FontAwesomeIcon icon={faBars} />
+                </div>
+
                 {/* Left Sidebar - Contact List */}
-                <div className="left-sidebar">
+                <div className={`left-sidebar ${isLeftSidebarCollapsed ? 'collapsed' : ''}`}>
                     <div className="sidebar-header">
-                        <h5 className="m-3">Contacts</h5>
+                        <div className="d-flex align-items-center">
+                            <h5 className="m-3">Contacts</h5>
+                            <FontAwesomeIcon
+                                icon={faBars}
+                                className="ms-auto me-3"
+                                style={{ cursor: 'pointer' }}
+                                onClick={toggleLeftSidebar}
+                            />
+                        </div>
                     </div>
                     <div className="contacts-list">
                         {dummyUsers.map(user => (
@@ -62,22 +92,24 @@ const ChatLayout: React.FC = () => {
                                 onClick={() => setSelectedUser(user as User)}
                             >
                                 <FontAwesomeIcon icon={faUser} className="me-2" />
-                                <span>{user.name}</span>
-                                <FontAwesomeIcon
-                                    icon={faCircle}
-                                    className="ms-auto"
-                                    style={{
-                                        color: getStatusColor(user.status || 'offline'),
-                                        fontSize: '0.5rem'
-                                    }}
-                                />
+                                {!isLeftSidebarCollapsed && <span>{user.name}</span>}
+                                {!isLeftSidebarCollapsed && (
+                                    <FontAwesomeIcon
+                                        icon={faCircle}
+                                        className="ms-auto"
+                                        style={{
+                                            color: getStatusColor(user.status || 'offline'),
+                                            fontSize: '0.5rem'
+                                        }}
+                                    />
+                                )}
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {/* Main Chat Area */}
-                <main className="content">
+                <main className={`content ${isLeftSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
                     {selectedUser ? (
                         <div className="chat-container">
                             <div className="chat-header">

@@ -21,15 +21,10 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-
         const user = dummyUsers.find(u => u.email === formData.email && u.password === formData.password);
-
-
-
         if (user) {
-            setIsAuthenticated(true);
             localStorage.setItem('currentUser', JSON.stringify(user));
+            setIsAuthenticated(true);
             navigate('/chat');
         } else {
             setError('Invalid email or password');

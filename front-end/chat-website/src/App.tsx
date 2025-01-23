@@ -31,6 +31,20 @@ const App: React.FC = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Check authentication status on component mount
+    useEffect(() => {
+        const user = localStorage.getItem('currentUser');
+        if (user) {
+            setIsAuthenticated(true);
+        }
+    }, []);
+
+    // Handle logout globally
+    const handleLogout = () => {
+        localStorage.removeItem('currentUser');
+        setIsAuthenticated(false);
+    };
+
     return (
         <BrowserRouter>
             <Routes>
@@ -46,7 +60,7 @@ const App: React.FC = () => {
                 } />
                 <Route path="/chat" element={
                     isAuthenticated ?
-                        <ChatLayout /> :
+                        <ChatLayout onLogout={handleLogout} /> :
                         <Navigate to="/login" replace />
                 } />
                 <Route path="/" element={<Navigate to="/chat" replace />} />
