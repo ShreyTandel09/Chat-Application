@@ -3,18 +3,25 @@ import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
 import { SignUpFormData } from '../../types';
+import { useNavigate } from 'react-router-dom';
 
 interface SignUpProps {
     onToggleAuth: () => void;
 }
 
 const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState<SignUpFormData>({
         username: '',
         email: '',
         password: '',
         confirmPassword: ''
     });
+
+
+    const handleSignIn = () => {
+        navigate('/login');
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,13 +97,13 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
                                     </div>
                                 </Form.Group>
 
-                                <Button variant="primary" type="submit" className="w-100 mb-3">
+                                <Button variant="primary" type="submit" className="w-100 mb-3" >
                                     Sign Up
                                 </Button>
 
                                 <p className="text-center mb-0">
                                     Already have an account?{' '}
-                                    <Button variant="link" className="p-0" onClick={onToggleAuth}>
+                                    <Button variant="link" className="p-0" onClick={handleSignIn}>
                                         Sign In
                                     </Button>
                                 </p>

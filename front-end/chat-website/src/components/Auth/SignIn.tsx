@@ -19,6 +19,11 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
     });
     const [error, setError] = useState<string>('');
 
+
+    const handleSignUp = () => {
+        navigate('/signup');
+    }
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const user = dummyUsers.find(u => u.email === formData.email && u.password === formData.password);
@@ -77,7 +82,7 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
 
                                 <p className="text-center mb-0">
                                     Don't have an account?{' '}
-                                    <Button variant="link" className="p-0" onClick={onToggleAuth}>
+                                    <Button variant="link" className="p-0" onClick={handleSignUp}>
                                         Sign Up
                                     </Button>
                                 </p>
