@@ -3,6 +3,6 @@ import { User } from 'src/users/user.entity';
 export interface AuthResponse {
   message: string;
   user?: User;
-  accessToken?: string;
-  refreshToken?: string;
+  accessToken?: string | null;
+  refreshToken?: string | null;
 }
