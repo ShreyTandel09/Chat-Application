@@ -3,8 +3,8 @@ node_modules/
 /front-end/node_modules/
 /back-end/node_modules/
 /back-end/chat_app/venv/
-/back-end/chat-app-nestjs/node_modules/
-/back-end/chat-app-nestjs/dist/
++ /back-end/chat-app-nestjs/node_modules/
++ /back-end/chat-app-nestjs/dist/
 __pycache__/
 *.py[cod]
 
@@ -21,7 +21,7 @@ __pycache__/
 /front-end/dist/
 /back-end/build/
 /back-end/dist/
-/back-end/chat-app-nestjs/dist/
++ /back-end/chat-app-nestjs/dist/
 
 # IDE specific files
 .idea/
@@ -30,28 +30,7 @@ __pycache__/
 *.swo
 .DS_Store
 
-# Django specific
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-media/
-static/
-
-# Testing
-/coverage
-.coverage
-htmlcov/
-.pytest_cache/
-
 # NestJS specific
-/back-end/chat-app-nestjs/.env
-/back-end/chat-app-nestjs/dist
-/back-end/chat-app-nestjs/node_modules
-
-# Misc
-*.bak
-*.tmp
-*.temp
-.DS_Store
-Thumbs.db 
++ /back-end/chat-app-nestjs/.env
++ /back-end/chat-app-nestjs/dist
++ /back-end/chat-app-nestjs/node_modules
