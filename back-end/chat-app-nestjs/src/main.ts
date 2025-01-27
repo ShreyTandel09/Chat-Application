@@ -1,10 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // strips non-whitelisted properties
+      transform: true, // transforms payloads to be objects typed according to their DTO classes
+      forbidNonWhitelisted: true, // throws errors if non-whitelisted properties are present
+    }),
+  );
 
   app.setBaseViewsDir(join(__dirname, '..', 'src'));
   app.setViewEngine('hbs');

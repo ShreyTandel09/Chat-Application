@@ -9,24 +9,28 @@ import {
   Res,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { User } from 'src/users/user.entity';
 import { AuthService } from './auth.service';
+import { SignUpDto } from './validator/authValidator/sign-up.dto';
+import { SignInDto } from './validator/authValidator/sign-in.dto';
+import { EmailVerifyDto } from './validator/authValidator/email-verify.dto';
 import { join } from 'path';
+import { ForgotPasswordDto } from './validator/authValidator/forgot-password.dto';
+import { ResetPasswordDto } from './validator/authValidator/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async signUp(@Body() user: User) {
-    const resData = await this.authService.signUp(user);
+  async signUp(@Body() signUpDto: SignUpDto) {
+    const resData = await this.authService.signUp(signUpDto);
     return { message: 'User created successfully', user: resData };
   }
 
   @Post('login')
   @HttpCode(200)
-  async signIn(@Body() user: User) {
-    const resData = await this.authService.signIn(user);
+  async signIn(@Body() signInDto: SignInDto) {
+    const resData = await this.authService.signIn(signInDto);
     return { message: 'User logged in successfully', user: resData };
   }
 
@@ -57,22 +61,25 @@ export class AuthController {
 
   @Post('resend-email-verify')
   @HttpCode(200)
-  async resendEmailVerify(@Body() user: User) {
-    await this.authService.resendEmailVerify(user);
+  async resendEmailVerify(@Body() emailVerifyDto: EmailVerifyDto) {
+    await this.authService.resendEmailVerify(emailVerifyDto);
     return { message: 'Email verification resent successfully' };
   }
 
   @Post('forgot-password')
   @HttpCode(200)
-  async forgotPassword(@Body() user: User) {
-    await this.authService.forgotPassword(user);
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(forgotPasswordDto);
     return { message: 'Password reset email sent successfully' };
   }
 
   @Post('reset-password')
   @HttpCode(200)
-  async resetPassword(@Query('token') token: string, @Body() user: User) {
-    await this.authService.resetPassword(token, user);
+  async resetPassword(
+    @Query('token') token: string,
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ) {
+    await this.authService.resetPassword(token, resetPasswordDto);
     return { message: 'Password reset successfully' };
   }
 }
