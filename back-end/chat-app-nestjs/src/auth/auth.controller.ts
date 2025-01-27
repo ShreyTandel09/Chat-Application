@@ -6,10 +6,12 @@ import {
   Get,
   Req,
   Query,
+  Res,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { User } from 'src/users/user.entity';
 import { AuthService } from './auth.service';
+import { join } from 'path';
 
 @Controller('auth')
 export class AuthController {
@@ -38,8 +40,39 @@ export class AuthController {
   }
 
   @Get('email-verify')
-  async emailVerify(@Query('token') token: string) {
-    const resData = await this.authService.emailVerify(token);
-    return { message: 'Email verified successfully', user: resData };
+  async emailVerify(@Query('token') token: string, @Res() res: Response) {
+    await this.authService.emailVerify(token);
+    // Read and send the success template
+    const template = join(
+      __dirname,
+      '..',
+      'email',
+      'templates',
+      'verify-success.hbs',
+    );
+    return res.render(template, {
+      loginUrl: `${process.env.FRONTEND_URL}/auth/login`,
+    });
+  }
+
+  @Post('resend-email-verify')
+  @HttpCode(200)
+  async resendEmailVerify(@Body() user: User) {
+    await this.authService.resendEmailVerify(user);
+    return { message: 'Email verification resent successfully' };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(200)
+  async forgotPassword(@Body() user: User) {
+    await this.authService.forgotPassword(user);
+    return { message: 'Password reset email sent successfully' };
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  async resetPassword(@Query('token') token: string, @Body() user: User) {
+    await this.authService.resetPassword(token, user);
+    return { message: 'Password reset successfully' };
   }
 }

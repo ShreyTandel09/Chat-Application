@@ -82,4 +82,13 @@ export class TokenService {
     );
     return token;
   }
+
+  async generatePasswordResetToken(email: string): Promise<string> {
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+    const token = await this.jwtService.signAsync(
+      { email },
+      { secret: jwtSecret, expiresIn: '10m' },
+    );
+    return token;
+  }
 }

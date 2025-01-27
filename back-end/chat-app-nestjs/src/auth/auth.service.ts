@@ -80,8 +80,54 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid email verification token');
     }
+
     user.is_verified = true;
     await this.usersService.updateUser(user);
-    return user;
+    return { message: 'Email verified successfully' };
+  }
+
+  async resendEmailVerify(user: User) {
+    const existingUser = await this.usersService.findUserByEmail(user.email);
+    if (!existingUser) {
+      throw new UnauthorizedException('User does not exist');
+    }
+    if (existingUser.is_verified) {
+      throw new UnauthorizedException('Email already verified');
+    }
+    const emailVerifyToken = await this.tokenService.generateEmailVerifyToken(
+      existingUser.email,
+    );
+    await this.emailService.sendUserConfirmation(
+      existingUser.email,
+      emailVerifyToken,
+    );
+    return { message: 'Email verification resent successfully' };
+  }
+
+  async forgotPassword(user: User) {
+    const existingUser = await this.usersService.findUserByEmail(user.email);
+    if (!existingUser) {
+      throw new UnauthorizedException('User does not exist');
+    }
+    const passwordResetToken =
+      await this.tokenService.generatePasswordResetToken(existingUser.email);
+    await this.emailService.sendPasswordReset(
+      existingUser.email,
+      passwordResetToken,
+    );
+    return { message: 'Password reset email sent successfully' };
+  }
+
+  async resetPassword(token: string, user: User) {
+    const decoded = this.jwtService.verify<{ email: string }>(token, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+    const existingUser = await this.usersService.findUserByEmail(decoded.email);
+    if (!existingUser) {
+      throw new UnauthorizedException('Invalid password reset token');
+    }
+    existingUser.password = user.password;
+    await this.usersService.updateUser(existingUser);
+    return { message: 'Password reset successfully' };
   }
 }

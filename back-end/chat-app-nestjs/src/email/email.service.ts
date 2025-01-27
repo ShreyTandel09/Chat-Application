@@ -21,4 +21,17 @@ export class EmailService {
       },
     });
   }
+
+  async sendPasswordReset(email: string, token: string) {
+    const url = `${this.configService.get<string>('FRONTEND_URL')}/auth/reset-password?token=${token}`;
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Chat App! Reset your Password',
+      template: './reset-password',
+      context: {
+        resetUrl: url,
+      },
+    });
+  }
 }
