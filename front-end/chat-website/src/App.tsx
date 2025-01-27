@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import SignIn from './components/Auth/SignIn';
 import SignUp from './components/Auth/SignUp';
+import VerifyEmail from './components/Auth/verify-email';
 import './App.css';
 import ChatLayout from './components/Chat/ChatLayout';
 
@@ -53,9 +54,11 @@ const App: React.FC = () => {
                         <Navigate to="/chat" replace /> :
                         <SignIn onToggleAuth={() => setShowSignUp(true)} setIsAuthenticated={setIsAuthenticated} />
                 } />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+
                 <Route path="/signup" element={
                     isAuthenticated ?
-                        <Navigate to="/chat" replace /> :
+                        <Navigate to="/verify-email" replace /> :
                         <SignUp onToggleAuth={() => setShowSignUp(false)} />
                 } />
                 <Route path="/chat" element={

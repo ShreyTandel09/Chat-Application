@@ -11,7 +11,10 @@ export interface AuthFormData {
 }
 
 export interface SignUpFormData extends AuthFormData {
-  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
   confirmPassword: string;
 }
 

@@ -12,7 +12,8 @@ interface SignUpProps {
 const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<SignUpFormData>({
-        username: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
         confirmPassword: ''
@@ -44,9 +45,24 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
                                         </span>
                                         <Form.Control
                                             type="text"
-                                            placeholder="Username"
-                                            value={formData.username}
-                                            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                            placeholder="First Name"
+                                            value={formData.firstName}
+                                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                </Form.Group>
+
+                                <Form.Group className="mb-4">
+                                    <div className="input-group">
+                                        <span className="input-group-text">
+                                            <FontAwesomeIcon icon={faUser} />
+                                        </span>
+                                        <Form.Control
+                                            type="text"
+                                            placeholder="Last Name"
+                                            value={formData.lastName}
+                                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                             required
                                         />
                                     </div>
