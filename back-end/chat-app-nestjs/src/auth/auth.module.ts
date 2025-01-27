@@ -8,10 +8,12 @@ import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from '../utlis/jwt.strategy';
 import { Token } from './token.entity';
 import { TokenService } from './token.service';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
     UsersModule,
+    EmailModule,
     TypeOrmModule.forFeature([Token]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

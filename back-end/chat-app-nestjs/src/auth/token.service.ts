@@ -2,13 +2,38 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
 import { Token } from './token.entity';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class TokenService {
   constructor(
     @InjectRepository(Token)
     private tokenRepository: Repository<Token>,
+    private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
+
+  public async getTokens(userId: number, email: string) {
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+    const jwtRefreshSecret =
+      this.configService.get<string>('JWT_REFRESH_SECRET');
+    const accessTokenExpiresIn = '24h';
+    const refreshTokenExpiresIn = '7d';
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(
+        { sub: userId, email },
+        { secret: jwtSecret, expiresIn: accessTokenExpiresIn },
+      ),
+      this.jwtService.signAsync(
+        { sub: userId, email },
+        { secret: jwtRefreshSecret, expiresIn: refreshTokenExpiresIn },
+      ),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
 
   async createToken(
     userId: number,
@@ -47,5 +72,14 @@ export class TokenService {
       { refresh_token: refreshToken },
       { access_token: accessToken },
     );
+  }
+
+  async generateEmailVerifyToken(email: string): Promise<string> {
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+    const token = await this.jwtService.signAsync(
+      { email },
+      { secret: jwtSecret, expiresIn: '24h' },
+    );
+    return token;
   }
 }

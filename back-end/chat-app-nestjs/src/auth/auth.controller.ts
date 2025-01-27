@@ -1,4 +1,12 @@
-import { Controller, Post, Body, HttpCode, Get, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  Get,
+  Req,
+  Query,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { User } from 'src/users/user.entity';
 import { AuthService } from './auth.service';
@@ -27,5 +35,11 @@ export class AuthController {
     // console.log(refreshToken);
     const resData = await this.authService.refreshToken(refreshToken);
     return { message: 'Token refreshed successfully', user: resData };
+  }
+
+  @Get('email-verify')
+  async emailVerify(@Query('token') token: string) {
+    const resData = await this.authService.emailVerify(token);
+    return { message: 'Email verified successfully', user: resData };
   }
 }

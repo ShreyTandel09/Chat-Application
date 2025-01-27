@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { User } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { TokenService } from './token.service';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -16,27 +17,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
+    private readonly emailService: EmailService,
   ) {}
-  private async getTokens(userId: number, email: string) {
-    const jwtSecret = this.configService.get<string>('JWT_SECRET');
-    const jwtRefreshSecret =
-      this.configService.get<string>('JWT_REFRESH_SECRET');
-    const accessTokenExpiresIn = '24h';
-    const refreshTokenExpiresIn = '7d';
-
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(
-        { sub: userId, email },
-        { secret: jwtSecret, expiresIn: accessTokenExpiresIn },
-      ),
-      this.jwtService.signAsync(
-        { sub: userId, email },
-        { secret: jwtRefreshSecret, expiresIn: refreshTokenExpiresIn },
-      ),
-    ]);
-
-    return { accessToken, refreshToken };
-  }
 
   async signUp(user: User) {
     const existingUser = await this.usersService.findUserByEmail(user.email);
@@ -44,6 +26,11 @@ export class AuthService {
       throw new UnprocessableEntityException('User already exists');
     }
     const userData = await this.usersService.createUser(user);
+
+    const emailVerifyToken = await this.tokenService.generateEmailVerifyToken(
+      user.email,
+    );
+    await this.emailService.sendUserConfirmation(user.email, emailVerifyToken);
     return userData;
   }
 
@@ -52,7 +39,10 @@ export class AuthService {
     if (!existingUser) {
       throw new UnprocessableEntityException('User does not exist');
     }
-    const tokens = await this.getTokens(existingUser.id, existingUser.email);
+    const tokens = await this.tokenService.getTokens(
+      existingUser.id,
+      existingUser.email,
+    );
 
     await this.tokenService.createToken(
       existingUser.id,
@@ -74,11 +64,24 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.tokenService.getTokens(user.id, user.email);
     await this.tokenService.updateAccessTokenByRefreshToken(
       refreshToken,
       tokens.accessToken,
     );
     return { ...tokens, user };
+  }
+
+  async emailVerify(token: string) {
+    const decoded = this.jwtService.verify<{ email: string }>(token, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+    const user = await this.usersService.findUserByEmail(decoded.email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid email verification token');
+    }
+    user.is_verified = true;
+    await this.usersService.updateUser(user);
+    return user;
   }
 }
