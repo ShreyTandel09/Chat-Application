@@ -1,36 +1,40 @@
+# Create new .gitignore
+cat > .gitignore << EOL
 # Dependencies
 node_modules/
 /front-end/node_modules/
 /back-end/node_modules/
 /back-end/chat_app/venv/
-+ /back-end/chat-app-nestjs/node_modules/
-+ /back-end/chat-app-nestjs/dist/
-__pycache__/
-*.py[cod]
+/back-end/chat-app-nestjs/node_modules/
 
 # Environment files
 .env
-.env.local
-.env.*.local
-.env.development
-.env.test
-.env.production
+.env.*
+!.env.example
 
 # Build outputs
 /front-end/build/
 /front-end/dist/
-/back-end/build/
-/back-end/dist/
-+ /back-end/chat-app-nestjs/dist/
+/back-end/chat-app-nestjs/dist/
 
-# IDE specific files
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-.DS_Store
 
-# NestJS specific
-+ /back-end/chat-app-nestjs/.env
-+ /back-end/chat-app-nestjs/dist
-+ /back-end/chat-app-nestjs/node_modules
+# Django
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+static/
+
+# Testing
+coverage/
+.coverage
+.pytest_cache/
+
+# Misc
+.DS_Store
+EOL
