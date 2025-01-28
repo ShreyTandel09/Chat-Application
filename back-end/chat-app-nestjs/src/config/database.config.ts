@@ -1,10 +1,11 @@
-import { DataSource } from 'typeorm';
-import { User } from './users/user.entity';
-import { Token } from './auth/token.entity';
 import { ConfigService } from '@nestjs/config';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { User } from '../users/user.entity';
+import { Token } from '../auth/token.entity';
 
-const configService = new ConfigService();
-export const AppDataSource = new DataSource({
+export const getDatabaseConfig = (
+  configService: ConfigService,
+): TypeOrmModuleOptions => ({
   type: 'postgres',
   host: configService.get('DB_HOST'),
   port: configService.get('DB_PORT'),
@@ -13,5 +14,6 @@ export const AppDataSource = new DataSource({
   database: configService.get('DB_NAME'),
   entities: [User, Token],
   migrations: ['dist/migrations/*.js'],
+  migrationsRun: true,
   synchronize: false,
 });

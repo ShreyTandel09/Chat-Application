@@ -1,7 +1,21 @@
-# Migration Commands
+## Database Migrations
 
-npx typeorm-ts-node-commonjs migration:generate -n InitialMigration -d src/data-source.ts
+### Generate a new migration
 
-npx typeorm-ts-node-commonjs migration:run -d src/data-source.ts
+```bash
+npm run migration:generate src/migrations/[MigrationName]
+```
 
+### Run migrations
+
+```bash
 npm run migration:run
+```
+
+### Revert last migration
+
+```bash
+npm run migration:revert
+```
+
+Note: Make sure your database is running and environment variables are properly set in .env file before running migrations.
