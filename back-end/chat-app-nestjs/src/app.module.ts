@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/user.entity';
 import { Token } from './auth/token.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,7 +23,9 @@ import { Token } from './auth/token.entity';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
         entities: [User, Token],
-        synchronize: true, // set to false in production
+        migrations: ['dist/migrations/*.js'],
+        migrationsRun: true,
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),
@@ -32,13 +35,4 @@ import { Token } from './auth/token.entity';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-  constructor() {
-    console.log('TypeORM Configuration:');
-    console.log(process.env.DB_HOST);
-    console.log(process.env.DB_PORT);
-    console.log(process.env.DB_USERNAME);
-    console.log(process.env.DB_PASSWORD);
-    console.log(process.env.DB_NAME);
-  }
-}
+export class AppModule {}
