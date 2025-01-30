@@ -58,7 +58,10 @@ export class AuthService {
       throw new UnprocessableEntityException('User does not exist');
     }
     if (!user.is_verified) {
-      throw new UnauthorizedException('Email not verified');
+      throw new UnauthorizedException({
+        is_verified: false,
+        message: 'Email not verified',
+      });
     }
     // Add password verification here
     const tokens = await this.tokenService.getTokens(user.id, user.email);
