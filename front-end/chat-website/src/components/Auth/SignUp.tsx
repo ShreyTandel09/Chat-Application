@@ -24,7 +24,7 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
     });
 
     const handleSignIn = () => {
-        navigate('/login');
+        navigate('/signin');
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -35,11 +35,11 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
             toast.error("Passwords don't match!");
             return;
         }
-
         setLoading(true);
         try {
             const response = await authService.signup(formData);
             if (response.status === 201) {
+                localStorage.setItem('loginData', JSON.stringify(response.data.user));
                 toast.success('Registration successful! Please verify your email.');
                 navigate('/verify-email');
             }

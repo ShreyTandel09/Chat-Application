@@ -71,7 +71,7 @@ const App: React.FC = () => {
             />
             <BrowserRouter>
                 <Routes>
-                    <Route path="/login" element={
+                    <Route path="/signin" element={
                         isAuthenticated ?
                             <Navigate to="/chat" replace /> :
                             <SignIn onToggleAuth={() => setShowSignUp(true)} setIsAuthenticated={handleLogin} />
@@ -86,7 +86,7 @@ const App: React.FC = () => {
                     <Route path="/chat" element={
                         isAuthenticated ?
                             <ChatLayout onLogout={handleLogout} /> :
-                            <Navigate to="/login" replace />
+                            <Navigate to="/signin" replace />
                     } />
                     <Route path="/" element={<Navigate to="/chat" replace />} />
                 </Routes>

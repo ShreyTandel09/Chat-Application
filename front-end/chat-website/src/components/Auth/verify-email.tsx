@@ -1,63 +1,89 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelopeOpen } from '@fortawesome/free-solid-svg-icons';
+import { authService } from '../../services/api/authApi/authService';
+import { toast } from 'react-toastify';
+import Loader from '../Common/Loader';
 
 const VerifyEmail: React.FC = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
 
     const handleLogin = () => {
-        navigate('/login');
+        navigate('/signin');
     };
 
-    const handleResendEmail = () => {
-        console.log('Resend email');
+    const handleResendEmail = async () => {
+        try {
+            setLoading(true);
+            const loginData = localStorage.getItem('loginData');
+            if (loginData) {
+                const parsedData = JSON.parse(loginData);
+                const response = await authService.resendEmailVerify(parsedData.email);
+                console.log(response);
+                if (response.status === 200) {
+                    toast.success('Email verification link resent successfully!');
+                    navigate('/signin');
+                }
+            } else {
+                console.warn('No login data found in localStorage');
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <Container fluid className="auth-container">
-            <Row className="justify-content-center align-items-center min-vh-100">
-                <Col xs={11} sm={8} md={6} lg={4}>
-                    <Card className="shadow-lg border-0 text-center">
-                        <Card.Body className="p-5">
-                            <div className="mb-4">
-                                <FontAwesomeIcon
-                                    icon={faEnvelopeOpen}
-                                    size="3x"
-                                    className="text-primary"
-                                />
-                            </div>
-                            <h2 className="mb-3">Check Your Email</h2>
-                            <p className="text-muted mb-4">
-                                We've sent you an email with a link to verify your account.
-                                Please check your inbox and click the link to continue.
-                            </p>
-                            <Button
-                                variant="primary"
-                                className="w-100 mb-3"
-                                onClick={handleLogin}
-                            >
-                                Login
-                            </Button>
+        <>
+            <Loader loading={loading} />
 
-                            <Button
-                                variant="primary"
-                                className="w-100 mb-3"
-                                onClick={handleLogin}
-                            >
-                                Resend Email Verification Link
-                            </Button>
-                            <p className="text-muted small mb-0"
-                                onClick={handleResendEmail}
-                            >
-                                Didn't receive the email? Check your spam folder or contact support.
-                            </p>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-        </Container>
+            <Container fluid className="auth-container">
+                <Row className="justify-content-center align-items-center min-vh-100">
+                    <Col xs={11} sm={8} md={6} lg={4}>
+                        <Card className="shadow-lg border-0 text-center">
+                            <Card.Body className="p-5">
+                                <div className="mb-4">
+                                    <FontAwesomeIcon
+                                        icon={faEnvelopeOpen}
+                                        size="3x"
+                                        className="text-primary"
+                                    />
+                                </div>
+                                <h2 className="mb-3">Check Your Email</h2>
+                                <p className="text-muted mb-4">
+                                    We've sent you an email with a link to verify your account.
+                                    Please check your inbox and click the link to continue.
+                                </p>
+                                <Button
+                                    variant="primary"
+                                    className="w-100 mb-3"
+                                    onClick={handleLogin}
+                                >
+                                    Login
+                                </Button>
+
+                                <Button
+                                    variant="primary"
+                                    className="w-100 mb-3"
+                                    onClick={handleResendEmail}
+                                >
+                                    Resend Email Verification Link
+                                </Button>
+                                <p className="text-muted small mb-0"
+                                >
+                                    Didn't receive the email? Check your spam folder or contact support.
+                                </p>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+            </Container>
+        </>
     );
 };
 
