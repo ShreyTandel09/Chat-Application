@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { AuthFormData } from '../../types';
 import { dummyUsers } from '../../data/dummyData';
 import { useNavigate } from 'react-router-dom';
@@ -23,7 +23,7 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
         password: ''
     });
     const [error, setError] = useState<string>('');
-
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSignUp = () => {
         navigate('/signup');
@@ -59,6 +59,10 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
         }
     };
 
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
         <>
             <Loader loading={loading} />
@@ -91,12 +95,19 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
                                                 <FontAwesomeIcon icon={faLock} />
                                             </span>
                                             <Form.Control
-                                                type="password"
+                                                type={showPassword ? "text" : "password"}
                                                 placeholder="Password"
                                                 value={formData.password}
                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                                 required
                                             />
+                                            <span
+                                                className="input-group-text"
+                                                onClick={togglePasswordVisibility}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                            </span>
                                         </div>
                                     </Form.Group>
 

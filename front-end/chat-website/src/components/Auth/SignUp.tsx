@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { SignUpFormData } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -22,6 +22,8 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
         password: '',
         re_password: ''
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleSignIn = () => {
         navigate('/signin');
@@ -52,6 +54,14 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
     };
 
     return (
@@ -115,12 +125,19 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
                                                 <FontAwesomeIcon icon={faLock} />
                                             </span>
                                             <Form.Control
-                                                type="password"
+                                                type={showPassword ? "text" : "password"}
                                                 placeholder="Password"
                                                 value={formData.password}
                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                                 required
                                             />
+                                            <span
+                                                className="input-group-text"
+                                                onClick={togglePasswordVisibility}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                            </span>
                                         </div>
                                     </Form.Group>
 
@@ -130,12 +147,19 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
                                                 <FontAwesomeIcon icon={faLock} />
                                             </span>
                                             <Form.Control
-                                                type="password"
+                                                type={showConfirmPassword ? "text" : "password"}
                                                 placeholder="Confirm Password"
                                                 value={formData.re_password}
                                                 onChange={(e) => setFormData({ ...formData, re_password: e.target.value })}
                                                 required
                                             />
+                                            <span
+                                                className="input-group-text"
+                                                onClick={toggleConfirmPasswordVisibility}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+                                            </span>
                                         </div>
                                     </Form.Group>
 

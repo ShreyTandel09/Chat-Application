@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Loader from '../Common/Loader';
@@ -20,6 +20,8 @@ const ResetPassword: React.FC = () => {
         password: '',
         confirmPassword: ''
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Get token from URL query parameters
     const token = new URLSearchParams(location.search).get('token');
@@ -66,6 +68,14 @@ const ResetPassword: React.FC = () => {
         navigate('/signin');
     };
 
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
+
     return (
         <>
             <Loader loading={loading} />
@@ -85,13 +95,20 @@ const ResetPassword: React.FC = () => {
                                                 <FontAwesomeIcon icon={faLock} />
                                             </span>
                                             <Form.Control
-                                                type="password"
+                                                type={showPassword ? "text" : "password"}
                                                 placeholder="New Password"
                                                 value={formData.password}
                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                                 required
                                                 minLength={6}
                                             />
+                                            <span
+                                                className="input-group-text"
+                                                onClick={togglePasswordVisibility}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                            </span>
                                         </div>
                                     </Form.Group>
 
@@ -101,13 +118,20 @@ const ResetPassword: React.FC = () => {
                                                 <FontAwesomeIcon icon={faLock} />
                                             </span>
                                             <Form.Control
-                                                type="password"
+                                                type={showConfirmPassword ? "text" : "password"}
                                                 placeholder="Confirm New Password"
                                                 value={formData.confirmPassword}
                                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                                 required
                                                 minLength={6}
                                             />
+                                            <span
+                                                className="input-group-text"
+                                                onClick={toggleConfirmPasswordVisibility}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+                                            </span>
                                         </div>
                                     </Form.Group>
 
