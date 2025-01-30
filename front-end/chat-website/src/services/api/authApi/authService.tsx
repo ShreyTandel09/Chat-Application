@@ -1,5 +1,5 @@
 import { axiosInstance } from "../../axiosService";
-import { SignUpFormData } from "../../../types";
+import { AuthFormData, SignUpFormData } from "../../../types";
 
 export const authService = {
     signup: async (data: SignUpFormData) => {
@@ -8,6 +8,10 @@ export const authService = {
     },
     resendEmailVerify: async (email: string) => {
         const response = await axiosInstance.post('/api/auth/resend-email-verify', { email });
+        return response;
+    },
+    signin: async (data: AuthFormData) => {
+        const response = await axiosInstance.post('/api/auth/signin', data);
         return response;
     }
 }

@@ -39,7 +39,6 @@ const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
         try {
             const response = await authService.signup(formData);
             if (response.status === 201) {
-                localStorage.setItem('loginData', JSON.stringify(response.data.user));
                 toast.success('Registration successful! Please verify your email.');
                 navigate('/verify-email');
             }

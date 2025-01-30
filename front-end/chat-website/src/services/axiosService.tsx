@@ -18,7 +18,7 @@ axiosInstance.interceptors.response.use(
     (error) => {
         const errorMessage = error?.response?.data?.message || 'Something went wrong!';
         console.error('API Error:', errorMessage);
-        return Promise.reject(new Error(errorMessage));
+        return Promise.reject(error.response.data);
     }
 );
 
