@@ -5,6 +5,7 @@ import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
 import { AuthFormData } from '../../types';
 import { dummyUsers } from '../../data/dummyData';
 import { useNavigate } from 'react-router-dom';
+import { axiosInstance } from '../../services/axiosService';
 
 interface SignInProps {
     onToggleAuth: () => void;

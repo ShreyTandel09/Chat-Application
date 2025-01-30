@@ -38,7 +38,7 @@ const VerifyEmail: React.FC = () => {
                                 className="w-100 mb-3"
                                 onClick={handleLogin}
                             >
-                                Back to Login
+                                Login
                             </Button>
 
                             <Button

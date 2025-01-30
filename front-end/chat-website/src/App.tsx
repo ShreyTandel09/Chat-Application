@@ -5,9 +5,16 @@ import SignUp from './components/Auth/SignUp';
 import VerifyEmail from './components/Auth/verify-email';
 import './App.css';
 import ChatLayout from './components/Chat/ChatLayout';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from './redux/store';
+import { login, logout } from './redux/slices/auth/authSlice';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './styles/loader.css';
 
 const App: React.FC = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const dispatch = useDispatch();
     const [showSignUp, setShowSignUp] = useState<boolean>(false);
 
     useEffect(() => {
@@ -36,41 +43,57 @@ const App: React.FC = () => {
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
         if (user) {
-            setIsAuthenticated(true);
+            dispatch(login(user));
         }
-    }, []);
+    }, [dispatch]);
 
-    // Handle logout globally
+    const handleLogin = () => {
+        const user = localStorage.getItem('currentUser');
+        dispatch(login(user));
+    };
+
     const handleLogout = () => {
-        localStorage.removeItem('currentUser');
-        setIsAuthenticated(false);
+        dispatch(logout());
     };
 
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/login" element={
-                    isAuthenticated ?
-                        <Navigate to="/chat" replace /> :
-                        <SignIn onToggleAuth={() => setShowSignUp(true)} setIsAuthenticated={setIsAuthenticated} />
-                } />
-                <Route path="/verify-email" element={<VerifyEmail />} />
+        <>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/login" element={
+                        isAuthenticated ?
+                            <Navigate to="/chat" replace /> :
+                            <SignIn onToggleAuth={() => setShowSignUp(true)} setIsAuthenticated={handleLogin} />
+                    } />
+                    <Route path="/verify-email" element={<VerifyEmail />} />
 
-                <Route path="/signup" element={
-                    isAuthenticated ?
-                        <Navigate to="/verify-email" replace /> :
-                        <SignUp onToggleAuth={() => setShowSignUp(false)} />
-                } />
-                <Route path="/chat" element={
-                    isAuthenticated ?
-                        <ChatLayout onLogout={handleLogout} /> :
-                        <Navigate to="/login" replace />
-                } />
-                <Route path="/" element={<Navigate to="/chat" replace />} />
-            </Routes>
-            {/* <ChatLayout /> : */}
+                    <Route path="/signup" element={
+                        isAuthenticated ?
+                            <Navigate to="/verify-email" replace /> :
+                            <SignUp onToggleAuth={() => setShowSignUp(false)} />
+                    } />
+                    <Route path="/chat" element={
+                        isAuthenticated ?
+                            <ChatLayout onLogout={handleLogout} /> :
+                            <Navigate to="/login" replace />
+                    } />
+                    <Route path="/" element={<Navigate to="/chat" replace />} />
+                </Routes>
+                {/* <ChatLayout /> : */}
 
-        </BrowserRouter>
+            </BrowserRouter>
+        </>
     );
 };
 

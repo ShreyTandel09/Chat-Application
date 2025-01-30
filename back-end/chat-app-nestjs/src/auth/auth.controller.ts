@@ -21,17 +21,17 @@ import { ResetPasswordDto } from './validator/authValidator/reset-password.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
+  @Post('signup')
   async signUp(@Body() signUpDto: SignUpDto) {
     const resData = await this.authService.signUp(signUpDto);
-    return { message: 'User created successfully', user: resData };
+    return resData;
   }
 
-  @Post('login')
+  @Post('signin')
   @HttpCode(200)
   async signIn(@Body() signInDto: SignInDto) {
     const resData = await this.authService.signIn(signInDto);
-    return { message: 'User logged in successfully', user: resData };
+    return resData;
   }
 
   @Get('refresh-token')
@@ -40,7 +40,7 @@ export class AuthController {
     const refreshToken = req.headers['x-refresh-token'] as string;
     // console.log(refreshToken);
     const resData = await this.authService.refreshToken(refreshToken);
-    return { message: 'Token refreshed successfully', user: resData };
+    return resData;
   }
 
   @Get('email-verify')
