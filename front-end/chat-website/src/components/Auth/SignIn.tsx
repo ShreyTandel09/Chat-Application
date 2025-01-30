@@ -35,6 +35,19 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Basic validation
+        if (!formData.email || !formData.password) {
+            toast.error('Please fill in all fields');
+            return;
+        }
+
+        // Password validation
+        if (formData.password.length < 6) {
+            toast.error('Password must be at least 6 characters long');
+            return;
+        }
+
         setLoading(true);
         try {
             const response = await authService.signin(formData);
@@ -45,15 +58,19 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
                 localStorage.setItem('isAuthenticated', 'true');
                 localStorage.removeItem('loginData');
                 setIsAuthenticated(true);
+                toast.success('Login successful!');
                 navigate('/chat');
             }
         } catch (error: any) {
             if (error.is_verified === false) {
                 toast.error(error.message);
                 navigate('/verify-email');
-            } else {
+            } else if (error.message) {
                 toast.error(error.message);
+            } else {
+                toast.error('An error occurred during sign in');
             }
+            console.error('Error:', error);
         } finally {
             setLoading(false);
         }

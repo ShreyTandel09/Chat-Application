@@ -7,6 +7,8 @@ import {
   Req,
   Query,
   Res,
+  ClassSerializerInterceptor,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -18,6 +20,7 @@ import { ForgotPasswordDto } from './validator/authValidator/forgot-password.dto
 import { ResetPasswordDto } from './validator/authValidator/reset-password.dto';
 
 @Controller('auth')
+@UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

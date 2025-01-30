@@ -15,6 +15,7 @@ import { EmailVerifyDto } from './validator/authValidator/email-verify.dto';
 import { ForgotPasswordDto } from './validator/authValidator/forgot-password.dto';
 import { ResetPasswordDto } from './validator/authValidator/reset-password.dto';
 import { AuthResponse } from './interfaces/auth.interface';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -36,7 +37,8 @@ export class AuthService {
 
     const user = new User();
     user.email = signUpDto.email;
-    user.password = signUpDto.password;
+    const salt = await bcrypt.genSalt();
+    user.password = await bcrypt.hash(signUpDto.password, salt);
     user.first_name = signUpDto.first_name;
     user.last_name = signUpDto.last_name;
 
@@ -63,7 +65,12 @@ export class AuthService {
         message: 'Email not verified',
       });
     }
-    // Add password verification here
+
+    const isPasswordValid = await bcrypt.compare(signInDto.password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     const tokens = await this.tokenService.getTokens(user.id, user.email);
     return { message: 'Login successful', ...tokens, user };
   }
@@ -147,7 +154,9 @@ export class AuthService {
     if (!existingUser) {
       throw new UnauthorizedException('Invalid password reset token');
     }
-    existingUser.password = resetPasswordDto.password;
+
+    const salt = await bcrypt.genSalt();
+    existingUser.password = await bcrypt.hash(resetPasswordDto.password, salt);
     await this.usersService.updateUser(existingUser);
     return { message: 'Password reset successfully' };
   }
