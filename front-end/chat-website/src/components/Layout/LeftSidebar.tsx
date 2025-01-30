@@ -1,33 +1,69 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { Form, InputGroup } from 'react-bootstrap';
 import { User } from '../../types';
 
-const LeftSidebar: React.FC = () => {
-    const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+interface LeftSidebarProps {
+    users: User[];
+    selectedUser: User | null;
+    onSelectUser: (user: User) => void;
+    isCollapsed: boolean;
+}
 
-    const contacts: User[] = [
-        { id: 1, name: 'John Doe' },
-        { id: 2, name: 'Jane Smith' },
-        { id: 3, name: 'Mike Johnson' },
-    ];
+const LeftSidebar: React.FC<LeftSidebarProps> = ({
+    users,
+    selectedUser,
+    onSelectUser,
+    isCollapsed
+}) => {
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'online': return '#28a745';
+            case 'away': return '#ffc107';
+            default: return '#dc3545';
+        }
+    };
 
     return (
         <div className={`left-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-            <div className="sidebar-toggle" onClick={() => setIsCollapsed(!isCollapsed)}>
-                <FontAwesomeIcon icon={faBars} />
+            <div className="sidebar-header p-3">
+                <h5 className="mb-3">Chats</h5>
+                <InputGroup className="mb-2">
+                    <InputGroup.Text>
+                        <FontAwesomeIcon icon={faSearch} />
+                    </InputGroup.Text>
+                    <Form.Control
+                        placeholder="Search users..."
+                        aria-label="Search users"
+                    />
+                </InputGroup>
             </div>
-            <div className="sidebar-content">
-                <div className="contacts-list">
-                    {contacts.map(contact => (
-                        <div key={contact.id} className="contact-item">
-                            <FontAwesomeIcon icon={faUser} />
-                            <span className={isCollapsed ? 'd-none' : 'ms-2'}>
-                                {contact.name}
-                            </span>
+            <div className="contacts-list">
+                {users.map(user => (
+                    <div
+                        key={user.id}
+                        className={`contact-item ${selectedUser?.id === user.id ? 'active' : ''}`}
+                        onClick={() => onSelectUser(user)}
+                    >
+                        <div className="contact-avatar">
+                            <FontAwesomeIcon icon={faUser} className="avatar-icon" />
+                            <FontAwesomeIcon
+                                icon={faCircle}
+                                className="status-indicator"
+                                style={{ color: getStatusColor(user.status || 'offline') }}
+                            />
                         </div>
-                    ))}
-                </div>
+                        {!isCollapsed && (
+                            <div className="contact-info">
+                                <div className="contact-name">{user.name}</div>
+                                <div className="contact-status">
+                                    {user.status === 'online' ? 'Active now' : 'Offline'}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
     );

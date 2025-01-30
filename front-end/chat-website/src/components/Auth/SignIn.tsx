@@ -141,7 +141,6 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
                                         </Button>
                                     </p>
                                     <p className="text-center mb-0">
-                                        Forgot your password?{' '}
                                         <Button variant="link" className="p-0" onClick={handleForgotPassword}>
                                             Forgot Password
                                         </Button>
