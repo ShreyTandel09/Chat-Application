@@ -11,6 +11,8 @@ import { login, logout } from './redux/slices/auth/authSlice';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/loader.css';
+import ForgotPassword from './components/Auth/forgot-password';
+import ResetPassword from './components/Auth/reset-password';
 
 const App: React.FC = () => {
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
@@ -83,6 +85,8 @@ const App: React.FC = () => {
                             <Navigate to="/verify-email" replace /> :
                             <SignUp onToggleAuth={() => setShowSignUp(false)} />
                     } />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/chat" element={
                         isAuthenticated ?
                             <ChatLayout onLogout={handleLogout} /> :

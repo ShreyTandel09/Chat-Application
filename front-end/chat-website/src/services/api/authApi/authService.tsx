@@ -13,5 +13,13 @@ export const authService = {
     signin: async (data: AuthFormData) => {
         const response = await axiosInstance.post('/api/auth/signin', data);
         return response;
-    }
+    },
+
+    forgotPassword: async (email: string) => {
+        const response = await axiosInstance.post('/api/auth/forgot-password', { email });
+        return response;
+    },
+    resetPassword: (token: string, password: string) => {
+        return axiosInstance.post(`/api/auth/reset-password?token=${token}`, { password });
+    },
 }

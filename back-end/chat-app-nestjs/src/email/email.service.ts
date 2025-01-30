@@ -10,7 +10,7 @@ export class EmailService {
   ) {}
 
   async sendUserConfirmation(email: string, token: string) {
-    const url = `${this.configService.get<string>('FRONTEND_URL')}/api/auth/email-verify?token=${token}`;
+    const url = `${this.configService.get<string>('BACKEND_URL')}/api/auth/email-verify?token=${token}`;
 
     await this.mailerService.sendMail({
       to: email,
@@ -23,7 +23,7 @@ export class EmailService {
   }
 
   async sendPasswordReset(email: string, token: string) {
-    const url = `${this.configService.get<string>('FRONTEND_URL')}/api/auth/reset-password?token=${token}`;
+    const url = `${this.configService.get<string>('FRONTEND_URL')}/reset-password?token=${token}`;
 
     await this.mailerService.sendMail({
       to: email,

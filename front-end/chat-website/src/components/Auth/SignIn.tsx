@@ -29,8 +29,8 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
         navigate('/signup');
     }
 
-    const handleVerifyEmail = () => {
-        navigate('/verify-email');
+    const handleForgotPassword = () => {
+        navigate('/forgot-password');
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -113,9 +113,9 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
                                         </Button>
                                     </p>
                                     <p className="text-center mb-0">
-                                        Account not verified?{' '}
-                                        <Button variant="link" className="p-0" onClick={handleVerifyEmail}>
-                                            Verify Email
+                                        Forgot your password?{' '}
+                                        <Button variant="link" className="p-0" onClick={handleForgotPassword}>
+                                            Forgot Password
                                         </Button>
                                     </p>
                                 </Form>

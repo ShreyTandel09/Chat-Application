@@ -55,7 +55,7 @@ export class AuthController {
       'verify-success.hbs',
     );
     return res.render(template, {
-      loginUrl: `${process.env.FRONTEND_URL}/auth/login`,
+      loginUrl: `${process.env.FRONTEND_URL}/signin`,
     });
   }
 
