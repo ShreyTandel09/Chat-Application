@@ -3,15 +3,13 @@ import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { AuthFormData } from '../../types';
-import { dummyUsers } from '../../data/dummyData';
 import { useNavigate } from 'react-router-dom';
-import { axiosInstance } from '../../services/axiosService';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/api/authApi/authService';
 import Loader from '../Common/Loader';
 
 interface SignInProps {
-    onToggleAuth: () => void;
+    onToggleAuth?: () => void;
     setIsAuthenticated: (value: boolean) => void;
 }
 

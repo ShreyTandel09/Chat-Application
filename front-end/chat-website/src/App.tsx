@@ -17,7 +17,6 @@ import ResetPassword from './components/Auth/reset-password';
 const App: React.FC = () => {
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const dispatch = useDispatch();
-    const [showSignUp, setShowSignUp] = useState<boolean>(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -74,16 +73,12 @@ const App: React.FC = () => {
             <BrowserRouter>
                 <Routes>
                     <Route path="/signin" element={
-                        isAuthenticated ?
-                            <Navigate to="/chat" replace /> :
-                            <SignIn onToggleAuth={() => setShowSignUp(true)} setIsAuthenticated={handleLogin} />
+                        <SignIn setIsAuthenticated={handleLogin} />
                     } />
                     <Route path="/verify-email" element={<VerifyEmail />} />
 
                     <Route path="/signup" element={
-                        isAuthenticated ?
-                            <Navigate to="/verify-email" replace /> :
-                            <SignUp onToggleAuth={() => setShowSignUp(false)} />
+                        <SignUp />
                     } />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
@@ -92,7 +87,7 @@ const App: React.FC = () => {
                             <ChatLayout onLogout={handleLogout} /> :
                             <Navigate to="/signin" replace />
                     } />
-                    <Route path="/" element={<Navigate to="/chat" replace />} />
+                    <Route path="/" element={<Navigate to="/signin" replace />} />
                 </Routes>
                 {/* <ChatLayout /> : */}
 

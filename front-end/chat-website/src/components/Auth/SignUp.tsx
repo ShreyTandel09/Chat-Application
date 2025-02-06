@@ -9,7 +9,7 @@ import Loader from '../Common/Loader';
 import { authService } from '../../services/api/authApi/authService';
 
 interface SignUpProps {
-    onToggleAuth: () => void;
+    onToggleAuth?: () => void;
 }
 
 const SignUp: React.FC<SignUpProps> = ({ onToggleAuth }) => {
