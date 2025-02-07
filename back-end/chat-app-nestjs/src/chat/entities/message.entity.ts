@@ -47,7 +47,7 @@ export class MessageHistory {
   @JoinColumn({ name: 'receiver_id' })
   receiver: User;
 
-  @ManyToOne(() => Conversation)
+  @ManyToOne(() => Conversation, (conversation) => conversation.messages)
   @JoinColumn({ name: 'conversation_id' })
   conversation: Conversation;
 }

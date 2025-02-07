@@ -15,11 +15,12 @@ export const getDatabaseConfig = (
   password: configService.get('DB_PASSWORD'),
   database: configService.get('DB_NAME'),
   entities: [User, Token, Conversation, MessageHistory],
-  migrations: ['src/migrations/*.ts'],
-  migrationsRun: true,
   synchronize: false,
 });
 
-// For CLI commands
+// For CLI commands only
 const configService = new ConfigService();
-export default new DataSource(getDatabaseConfig(configService));
+export default new DataSource({
+  ...getDatabaseConfig(configService),
+  migrations: ['src/migrations/*.ts'], // Keep migrations only for CLI
+});

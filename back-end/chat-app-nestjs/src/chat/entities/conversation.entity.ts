@@ -6,8 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity'; // Adjust the import path as necessary
+import { MessageHistory } from './message.entity';
 
 @Entity('conversations')
 export class Conversation {
@@ -45,4 +47,7 @@ export class Conversation {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'participant_id' })
   participant: User;
+
+  @OneToMany(() => MessageHistory, (message) => message.conversation)
+  messages: MessageHistory[];
 }

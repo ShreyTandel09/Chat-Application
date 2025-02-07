@@ -14,10 +14,11 @@ import { ChatModule } from './chat/chat.module';
       isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) =>
-        getDatabaseConfig(configService),
       inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        ...getDatabaseConfig(configService),
+        migrationsRun: false,
+      }),
     }),
     UsersModule,
     AuthModule,
