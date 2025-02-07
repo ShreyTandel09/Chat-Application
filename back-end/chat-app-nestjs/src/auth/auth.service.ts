@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { TokenService } from './token.service';
 import { EmailService } from 'src/email/email.service';
@@ -66,7 +66,10 @@ export class AuthService {
       });
     }
 
-    const isPasswordValid = await bcrypt.compare(signInDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      signInDto.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
