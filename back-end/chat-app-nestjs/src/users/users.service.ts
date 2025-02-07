@@ -22,6 +22,10 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return this.usersRepository.find();
+  }
+
   async updateUser(user: User): Promise<User> {
     return this.usersRepository.save(user);
   }
