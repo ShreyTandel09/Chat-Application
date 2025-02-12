@@ -1,16 +1,23 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircle } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { Form, InputGroup } from 'react-bootstrap';
 import { User } from '../../types';
 
-const RightSidebar: React.FC = () => {
-    const activeUsers: User[] = [
-        { id: 1, name: 'John Doe', status: 'online' },
-        { id: 2, name: 'Jane Smith', status: 'away' },
-        { id: 3, name: 'Mike Johnson', status: 'offline' },
-    ];
+interface RightSidebarProps {
+    users: User[];
+    selectedUser: User | null;
+    onSelectUser: (user: User) => void;
+    isCollapsed: boolean;
+}
 
-    const getStatusColor = (status: 'online' | 'away' | 'offline'): string => {
+const RightSidebar: React.FC<RightSidebarProps> = ({
+    users,
+    selectedUser,
+    onSelectUser,
+    isCollapsed
+}) => {
+    const getStatusColor = (status: string) => {
         switch (status) {
             case 'online': return '#28a745';
             case 'away': return '#ffc107';
@@ -19,18 +26,33 @@ const RightSidebar: React.FC = () => {
     };
 
     return (
-        <div className="right-sidebar">
-            <h5 className="mb-3">Active Users</h5>
-            <div className="active-users">
-                {activeUsers.map(user => (
-                    <div key={user.id} className="d-flex align-items-center mb-2">
-                        <FontAwesomeIcon
-                            icon={faCircle}
-                            style={{ color: getStatusColor(user.status || 'offline') }}
-                            className="me-2"
-                            size="xs"
-                        />
-                        <span>{user.name}</span>
+        <div className="users-list">
+            <div className="sidebar-header">
+                <h5 className="m-3">Users</h5>
+                <div className="search-container">
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        className="search-input"
+                    />
+                </div>
+            </div>
+            <div className="users-container">
+                {users.map(user => (
+                    <div
+                        key={user.id}
+                        className={`user-item ${selectedUser?.id === user.id ? 'active' : ''}`}
+                        onClick={() => onSelectUser(user)}
+                    >
+                        <div className="user-avatar">
+                            <FontAwesomeIcon icon={faUser} />
+                        </div>
+                        <div className="user-info">
+                            <div className="user-name">{user.name}</div>
+                            <div className="user-status">
+                                {user.status === 'online' ? 'Active now' : 'Offline'}
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>

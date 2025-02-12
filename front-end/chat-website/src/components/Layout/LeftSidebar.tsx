@@ -1,7 +1,12 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { Form, InputGroup } from 'react-bootstrap';
+import {
+    faCog,
+    faCreditCard,
+    faComments,
+    faChevronLeft,
+    faChevronRight
+} from '@fortawesome/free-solid-svg-icons';
 import { User } from '../../types';
 
 interface LeftSidebarProps {
@@ -9,61 +14,40 @@ interface LeftSidebarProps {
     selectedUser: User | null;
     onSelectUser: (user: User) => void;
     isCollapsed: boolean;
+    onNavigate: (section: 'chats' | 'settings' | 'payments') => void;
+    activeSection: 'chats' | 'settings' | 'payments';
+    onToggle: () => void;
 }
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({
-    users,
-    selectedUser,
-    onSelectUser,
-    isCollapsed
+    isCollapsed,
+    onNavigate,
+    activeSection,
+    onToggle
 }) => {
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'online': return '#28a745';
-            case 'away': return '#ffc107';
-            default: return '#dc3545';
-        }
-    };
+
+    const navigationItems = [
+        { id: 'chats', icon: faComments, label: 'Chats' },
+        { id: 'settings', icon: faCog, label: 'Settings' },
+        { id: 'payments', icon: faCreditCard, label: 'Payments' }
+    ];
 
     return (
-        <div className={`left-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-            <div className="sidebar-header p-3">
-                <h5 className="mb-3">Chats</h5>
-                <InputGroup className="mb-2">
-                    <InputGroup.Text>
-                        <FontAwesomeIcon icon={faSearch} />
-                    </InputGroup.Text>
-                    <Form.Control
-                        placeholder="Search users..."
-                        aria-label="Search users"
-                    />
-                </InputGroup>
-            </div>
-            <div className="contacts-list">
-                {users.map(user => (
+        <div className={`navigation-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+            <div className="nav-items">
+                {navigationItems.map(item => (
                     <div
-                        key={user.id}
-                        className={`contact-item ${selectedUser?.id === user.id ? 'active' : ''}`}
-                        onClick={() => onSelectUser(user)}
+                        key={item.id}
+                        className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
+                        onClick={() => onNavigate(item.id as 'chats' | 'settings' | 'payments')}
                     >
-                        <div className="contact-avatar">
-                            <FontAwesomeIcon icon={faUser} className="avatar-icon" />
-                            <FontAwesomeIcon
-                                icon={faCircle}
-                                className="status-indicator"
-                                style={{ color: getStatusColor(user.status || 'offline') }}
-                            />
-                        </div>
-                        {!isCollapsed && (
-                            <div className="contact-info">
-                                <div className="contact-name">{user.name}</div>
-                                <div className="contact-status">
-                                    {user.status === 'online' ? 'Active now' : 'Offline'}
-                                </div>
-                            </div>
-                        )}
+                        <FontAwesomeIcon icon={item.icon} />
+                        {!isCollapsed && <span className="nav-label">{item.label}</span>}
                     </div>
                 ))}
+            </div>
+            <div className="nav-toggle" onClick={onToggle}>
+                <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronLeft} />
             </div>
         </div>
     );

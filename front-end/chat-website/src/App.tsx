@@ -87,9 +87,8 @@ const App: React.FC = () => {
                             <ChatLayout onLogout={handleLogout} /> :
                             <Navigate to="/signin" replace />
                     } />
-                    <Route path="/" element={<Navigate to="/signin" replace />} />
+                    <Route path="/" element={<Navigate to="/chat" replace />} />
                 </Routes>
-                {/* <ChatLayout /> : */}
 
             </BrowserRouter>
         </>
