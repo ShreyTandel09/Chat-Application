@@ -54,7 +54,12 @@ const App: React.FC = () => {
     };
 
     const handleLogout = () => {
-        dispatch(logout());
+        localStorage.removeItem('chat');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/signin';
     };
 
     return (
@@ -86,7 +91,7 @@ const App: React.FC = () => {
                         <ChatLayout onLogout={handleLogout} />
                         // <Navigate to="/chat" replace />
                     } />
-                    <Route path="/" element={<Navigate to="/chat" replace />} />
+                    <Route path="/" element={<Navigate to="/signin" replace />} />
                 </Routes>
 
             </BrowserRouter>
