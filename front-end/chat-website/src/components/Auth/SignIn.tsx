@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/api/authApi/authService';
 import Loader from '../Common/Loader';
+import { useDispatch } from 'react-redux';
+import { login } from '../../redux/slices/auth/authSlice';
 
 interface SignInProps {
     onToggleAuth?: () => void;
@@ -15,6 +17,7 @@ interface SignInProps {
 
 const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<AuthFormData>({
         email: '',
@@ -50,12 +53,7 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
         try {
             const response = await authService.signin(formData);
             if (response.status === 200) {
-                localStorage.setItem('userData', JSON.stringify(response.data.user));
-                localStorage.setItem('accessToken', response.data.accessToken);
-                localStorage.setItem('refreshToken', response.data.refreshToken);
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.removeItem('loginData');
-                setIsAuthenticated(true);
+                dispatch(login(response.data.user));
                 toast.success('Login successful!');
                 navigate('/chat');
             }

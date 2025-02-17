@@ -4,6 +4,7 @@ import { faUser, faCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { Form, InputGroup } from 'react-bootstrap';
 import { User } from '../../types';
 import { userService } from '../../services/api/users/userService';
+import { chatService } from '../../services/api/chat/chatService';
 
 interface RightSidebarProps {
     selectedUser: User | null;
@@ -14,7 +15,6 @@ interface RightSidebarProps {
 const RightSidebar: React.FC<RightSidebarProps> = ({
     selectedUser,
     onSelectUser,
-    isCollapsed
 }) => {
     const [users, setUsers] = useState<User[]>([]);
 
@@ -27,11 +27,22 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         fetchUsers();
     }, []);
 
+
     const searchUsers = async (searchTerm: string) => {
         console.log(searchTerm);
         const response = await userService.searchUsers(searchTerm);
         setUsers(response.data.data);
 
+    };
+
+    const createConversation = async (user: User) => {
+        const resData = JSON.parse(localStorage.getItem('persist:chat') || '{}');
+        const currentUser = JSON.parse(resData.user);
+        const data = {
+            clientId1: user.id,
+            clientId2: currentUser.id,
+        };
+        await chatService.createConversation(data);
     };
 
     const getStatusColor = (status: string) => {
@@ -62,7 +73,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                     <div
                         key={user.id}
                         className={`user-item ${selectedUser?.id === user.id ? 'active' : ''}`}
-                        onClick={() => onSelectUser(user)}
+                        onClick={() => {
+                            onSelectUser(user);
+                            createConversation(user);
+                        }}
                     >
                         <div className="user-avatar">
                             <FontAwesomeIcon icon={faUser} />

@@ -7,6 +7,7 @@ import {
   Get,
   Query,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateConversationDto } from './dto/create-conversaton.dto';
@@ -29,6 +30,7 @@ export class ChatController {
   }
 
   @Post('create-conversation')
+  @HttpCode(200)
   async createConversation(
     @Body() body: CreateConversationDto,
     @GetUser() user: User,

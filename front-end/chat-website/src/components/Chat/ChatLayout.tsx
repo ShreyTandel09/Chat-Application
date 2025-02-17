@@ -130,15 +130,10 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                                 <h5>Select a contact to start chatting</h5>
                             </div>
                         )
-                    ) : activeSection === 'settings' ? (
-                        <div className="settings-container">
-                            <h3>Settings</h3>
-                            {/* Add settings content here */}
-                        </div>
                     ) : (
-                        <div className="payments-container">
-                            <h3>Payments</h3>
-                            {/* Add payments content here */}
+                        <div className="empty-chat">
+                            <FontAwesomeIcon icon={faComments} size="3x" />
+                            <h5>Select a contact to start chatting</h5>
                         </div>
                     )}
                 </main>
