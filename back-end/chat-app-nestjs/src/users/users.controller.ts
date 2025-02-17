@@ -1,4 +1,4 @@
-import { Controller, Get, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseInterceptors } from '@nestjs/common';
 import { ClassSerializerInterceptor } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersResponse } from './interfaces/user-response.interface';
@@ -18,6 +18,12 @@ export class UsersController {
 
   @Get('me')
   getProfile(@GetUser() user: User) {
+    return { message: 'Users fetched successfully', data: user };
+  }
+
+  @Post('search')
+  async searchUsers(@Body() body: { searchTerm: string }) {
+    const user = await this.usersService.searchUsers(body.searchTerm);
     return { message: 'Users fetched successfully', data: user };
   }
 }

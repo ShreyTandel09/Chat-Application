@@ -4,7 +4,7 @@ export const axiosInstance = axios.create({ baseURL: process.env.REACT_APP_API_U
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('Authorization');
+        const token = localStorage.getItem('accessToken');
         if (token) {
             config.headers.set('Authorization', `Bearer ${token}`);
         }

@@ -7,12 +7,8 @@ import {
     faChevronLeft,
     faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
-import { User } from '../../types';
 
 interface LeftSidebarProps {
-    users: User[];
-    selectedUser: User | null;
-    onSelectUser: (user: User) => void;
     isCollapsed: boolean;
     onNavigate: (section: 'chats' | 'settings' | 'payments') => void;
     activeSection: 'chats' | 'settings' | 'payments';

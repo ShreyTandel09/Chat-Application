@@ -83,9 +83,8 @@ const App: React.FC = () => {
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/chat" element={
-                        isAuthenticated ?
-                            <ChatLayout onLogout={handleLogout} /> :
-                            <Navigate to="/signin" replace />
+                        <ChatLayout onLogout={handleLogout} />
+                        // <Navigate to="/chat" replace />
                     } />
                     <Route path="/" element={<Navigate to="/chat" replace />} />
                 </Routes>

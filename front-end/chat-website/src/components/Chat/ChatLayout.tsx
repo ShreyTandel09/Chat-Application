@@ -65,9 +65,6 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
             <NavigationBar onLogout={onLogout} />
             <div className="main-content">
                 <LeftSidebar
-                    users={dummyUsers as User[]}
-                    selectedUser={selectedUser}
-                    onSelectUser={setSelectedUser}
                     activeSection={activeSection}
                     onNavigate={handleNavigate}
                     isCollapsed={isLeftSidebarCollapsed}
@@ -84,7 +81,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                                             <FontAwesomeIcon icon={faUser} />
                                         </div>
                                         <div className="user-details">
-                                            <h6>{selectedUser.name}</h6>
+                                            <h6>{selectedUser.first_name} {selectedUser.last_name}</h6>
                                             <span className="status">Active now</span>
                                         </div>
                                     </div>
@@ -149,7 +146,6 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                 {activeSection === 'chats' && (
                     <div className="users-sidebar">
                         <RightSidebar
-                            users={dummyUsers as User[]}
                             selectedUser={selectedUser}
                             onSelectUser={setSelectedUser}
                             isCollapsed={false}
