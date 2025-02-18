@@ -7,8 +7,7 @@ import RightSidebar from '../Layout/RightSidebar';
 import LeftSidebar from '../Layout/LeftSidebar';
 import '../../styles/chat.css';
 import { chatService } from '../../services/api/chat/chatService';
-import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentUser } from '../../redux/slices/auth/authSlice';
+import { useSelector } from 'react-redux';
 
 interface ChatLayoutProps {
     onLogout: () => void;
@@ -27,9 +26,9 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
     });
     const currentUser = useSelector((state: any) => state.auth.currentUser);
 
-    const getConversation = async () => {
+    const getConversation = async (id: number) => {
         try {
-            const response = await chatService.getConversations(conversations.id);
+            const response = await chatService.getConversations(id);
             if (response.data) {
                 console.log(response.data.messagesHistory);
                 setMessages(response.data.messagesHistory || []);
@@ -64,7 +63,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
             };
 
             await chatService.sendMessage(newMsg);
-            getConversation();
+            getConversation(conversationData.id);
             setMessages([]);
             setNewMessage('');
         }

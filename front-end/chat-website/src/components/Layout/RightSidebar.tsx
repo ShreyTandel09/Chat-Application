@@ -11,7 +11,7 @@ interface RightSidebarProps {
     selectedUser: User | null;
     onSelectUser: (user: User) => void;
     isCollapsed: boolean;
-    onGetConversation: () => void;
+    onGetConversation: (id: number) => void;
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -51,7 +51,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         };
         const response = await chatService.createConversation(data);
         dispatch(setConversations(response.data.data));
-        onGetConversation();
+        onGetConversation(response.data.data.id)
     };
 
     const getStatusColor = (status: string) => {
