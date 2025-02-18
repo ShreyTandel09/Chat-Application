@@ -4,8 +4,8 @@ export const axiosInstance = axios.create({ baseURL: process.env.REACT_APP_API_U
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        const resData = JSON.parse(localStorage.getItem('persist:chat') || '{}');
-        const token = JSON.parse(resData.accessToken || 'null');
+        const store = require('../redux/store').default;
+        const token = store.getState().auth.accessToken;
         if (token) {
             config.headers.set('Authorization', `Bearer ${token}`);
         }

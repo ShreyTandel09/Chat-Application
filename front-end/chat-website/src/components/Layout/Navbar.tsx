@@ -7,7 +7,7 @@ import {
     faCog,
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import { currentUser } from '../Common/commonData';
+import { useSelector } from 'react-redux';
 
 interface NavigationBarProps {
     onLogout: () => void;
@@ -17,6 +17,9 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onLogout }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+
+
+    const currentUser = useSelector((state: any) => state.auth.currentUser);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

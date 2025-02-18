@@ -7,8 +7,8 @@ import RightSidebar from '../Layout/RightSidebar';
 import LeftSidebar from '../Layout/LeftSidebar';
 import '../../styles/chat.css';
 import { chatService } from '../../services/api/chat/chatService';
-import { useSelector } from 'react-redux';
-import { currentUser } from '../Common/commonData';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCurrentUser } from '../../redux/slices/auth/authSlice';
 
 interface ChatLayoutProps {
     onLogout: () => void;
@@ -25,6 +25,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
         const saved = localStorage.getItem('sidebarCollapsed');
         return saved ? JSON.parse(saved) : false;
     });
+    const currentUser = useSelector((state: any) => state.auth.currentUser);
 
     const getConversation = async () => {
         try {
@@ -53,17 +54,18 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
     const handleSendMessage = async () => {
         console.log("in handle send message");
         if (newMessage.trim() && selectedUser) {
-            const conversationData = JSON.parse(localStorage.getItem('persist:chat') || '{}');
+            const res = JSON.parse(localStorage.getItem('persist:chat') || '{}');
+            const conversationData = JSON.parse(res.conversations || '{}');
             const newMsg = {
-                conversationId: JSON.parse(conversationData.conversations).id,
+                conversationId: conversationData.id,
                 senderId: currentUser.id,
                 receiverId: selectedUser.id,
                 message: newMessage.trim(),
             };
 
             await chatService.sendMessage(newMsg);
-            setMessages([]);
             getConversation();
+            setMessages([]);
             setNewMessage('');
         }
     };

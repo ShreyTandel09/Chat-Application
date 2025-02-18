@@ -4,9 +4,8 @@ import { faUser, faCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { User } from '../../types';
 import { userService } from '../../services/api/users/userService';
 import { chatService } from '../../services/api/chat/chatService';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setConversations } from '../../redux/slices/chat/conversationSlice';
-import { currentUser, token } from '../Common/commonData';
 
 interface RightSidebarProps {
     selectedUser: User | null;
@@ -23,15 +22,12 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
     const dispatch = useDispatch();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
+    const currentUser = useSelector((state: any) => state.auth.currentUser);
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                if (!token) {
-                    setLoading(true);
-                    setTimeout(fetchUsers, 1000);
-                    return;
-                }
+                setLoading(true);
                 const response = await userService.getAllUsers();
                 setUsers(response.data.data);
                 setLoading(false);
