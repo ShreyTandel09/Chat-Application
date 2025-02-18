@@ -2,17 +2,20 @@ import React, { useState, useEffect } from 'react';
 import NavigationBar from '../Layout/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faBars, faComments, faCog, faCreditCard } from '@fortawesome/free-solid-svg-icons';
-import { Message, User } from '../../types';
+import { Conversation, Message, User } from '../../types';
 import { dummyMessages, dummyUsers } from '../../data/dummyData';
 import RightSidebar from '../Layout/RightSidebar';
 import LeftSidebar from '../Layout/LeftSidebar';
 import '../../styles/chat.css';
+import { chatService } from '../../services/api/chat/chatService';
+import { useSelector } from 'react-redux';
 
 interface ChatLayoutProps {
     onLogout: () => void;
 }
 
 const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
+    const conversations = useSelector((state: any) => state.conversation.conversations);
     const [messages, setMessages] = useState<Message[]>(dummyMessages);
     const [newMessage, setNewMessage] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -22,6 +25,18 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
         const saved = localStorage.getItem('sidebarCollapsed');
         return saved ? JSON.parse(saved) : false;
     });
+
+
+    const getConversation = async () => {
+        try {
+            const response = await chatService.getConversations(conversations.id);
+            if (response.data) {
+                setMessages(response.data.messages || []);
+            }
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
+    }
 
     useEffect(() => {
         localStorage.setItem('sidebarCollapsed', JSON.stringify(isLeftSidebarCollapsed));
@@ -144,6 +159,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                             selectedUser={selectedUser}
                             onSelectUser={setSelectedUser}
                             isCollapsed={false}
+                            onGetConversation={getConversation}
                         />
                     </div>
                 )}

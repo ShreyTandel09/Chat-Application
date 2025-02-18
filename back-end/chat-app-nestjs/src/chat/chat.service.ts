@@ -73,7 +73,7 @@ export class ChatService {
     if (existingConversation) {
       return {
         message: 'Conversation already exists',
-        conversation: existingConversation,
+        data: existingConversation,
       };
     }
 
@@ -89,7 +89,7 @@ export class ChatService {
       await this.conversationRepository.save(conversation);
     return {
       message: 'Conversation created successfully',
-      conversation: savedConversation,
+      data: savedConversation,
     };
   }
 
@@ -115,8 +115,6 @@ export class ChatService {
       message: 'Conversation retrieved successfully',
       conversation,
       messagesHistory: conversation.messages,
-      participant: conversation.participant,
-      creator: conversation.creator,
     };
   }
 

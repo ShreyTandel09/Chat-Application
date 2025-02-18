@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { authService } from '../../services/api/authApi/authService';
 import Loader from '../Common/Loader';
 import { useDispatch } from 'react-redux';
-import { login } from '../../redux/slices/auth/authSlice';
+import { login, setAccessToken, setRefreshToken } from '../../redux/slices/auth/authSlice';
 
 interface SignInProps {
     onToggleAuth?: () => void;
@@ -54,6 +54,9 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
             const response = await authService.signin(formData);
             if (response.status === 200) {
                 dispatch(login(response.data.user));
+                console.log(response.data);
+                dispatch(setAccessToken(response.data.accessToken));
+                dispatch(setRefreshToken(response.data.refreshToken));
                 toast.success('Login successful!');
                 navigate('/chat');
             }

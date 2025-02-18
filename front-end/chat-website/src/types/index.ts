@@ -25,3 +25,11 @@ export interface Message {
   content: string;
   timestamp: Date;
 } 
+
+export interface Conversation {
+  id: number;
+  title: string;
+  participantIds: number;
+  creatorId: number;
+  description: string;
+}

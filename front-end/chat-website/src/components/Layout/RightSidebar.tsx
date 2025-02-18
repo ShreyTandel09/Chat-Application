@@ -1,35 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { Form, InputGroup } from 'react-bootstrap';
 import { User } from '../../types';
 import { userService } from '../../services/api/users/userService';
 import { chatService } from '../../services/api/chat/chatService';
+import { useDispatch } from 'react-redux';
+import { setConversations } from '../../redux/slices/chat/conversationSlice';
 
 interface RightSidebarProps {
     selectedUser: User | null;
     onSelectUser: (user: User) => void;
     isCollapsed: boolean;
+    onGetConversation: () => void;
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({
     selectedUser,
     onSelectUser,
+    onGetConversation,
 }) => {
+    const dispatch = useDispatch();
     const [users, setUsers] = useState<User[]>([]);
 
     useEffect(() => {
         const fetchUsers = async () => {
             const response = await userService.getAllUsers();
             setUsers(response.data.data);
-            console.log(response.data.data);
         };
         fetchUsers();
     }, []);
 
 
     const searchUsers = async (searchTerm: string) => {
-        console.log(searchTerm);
         const response = await userService.searchUsers(searchTerm);
         setUsers(response.data.data);
 
@@ -42,7 +44,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             clientId1: user.id,
             clientId2: currentUser.id,
         };
-        await chatService.createConversation(data);
+        const response = await chatService.createConversation(data);
+        dispatch(setConversations(response.data.data));
+        onGetConversation();
     };
 
     const getStatusColor = (status: string) => {
