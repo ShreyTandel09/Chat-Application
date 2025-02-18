@@ -54,11 +54,7 @@ const App: React.FC = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('chat');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('persist:chat');
         window.location.href = '/signin';
     };
 

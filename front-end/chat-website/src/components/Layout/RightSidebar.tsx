@@ -6,6 +6,7 @@ import { userService } from '../../services/api/users/userService';
 import { chatService } from '../../services/api/chat/chatService';
 import { useDispatch } from 'react-redux';
 import { setConversations } from '../../redux/slices/chat/conversationSlice';
+import { currentUser, token } from '../Common/commonData';
 
 interface RightSidebarProps {
     selectedUser: User | null;
@@ -21,25 +22,33 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
 }) => {
     const dispatch = useDispatch();
     const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUsers = async () => {
-            const response = await userService.getAllUsers();
-            setUsers(response.data.data);
+            try {
+                if (!token) {
+                    setLoading(true);
+                    setTimeout(fetchUsers, 1000);
+                    return;
+                }
+                const response = await userService.getAllUsers();
+                setUsers(response.data.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                setLoading(false);
+            }
         };
         fetchUsers();
     }, []);
 
-
     const searchUsers = async (searchTerm: string) => {
         const response = await userService.searchUsers(searchTerm);
         setUsers(response.data.data);
-
     };
 
     const createConversation = async (user: User) => {
-        const resData = JSON.parse(localStorage.getItem('persist:chat') || '{}');
-        const currentUser = JSON.parse(resData.user);
         const data = {
             clientId1: user.id,
             clientId2: currentUser.id,

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import NavigationBar from '../Layout/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faBars, faComments, faCog, faCreditCard } from '@fortawesome/free-solid-svg-icons';
-import { Conversation, Message, User } from '../../types';
-import { dummyMessages, dummyUsers } from '../../data/dummyData';
+import { faUser, faComments } from '@fortawesome/free-solid-svg-icons';
+import { Message, User } from '../../types';
 import RightSidebar from '../Layout/RightSidebar';
 import LeftSidebar from '../Layout/LeftSidebar';
 import '../../styles/chat.css';
 import { chatService } from '../../services/api/chat/chatService';
 import { useSelector } from 'react-redux';
+import { currentUser } from '../Common/commonData';
 
 interface ChatLayoutProps {
     onLogout: () => void;
@@ -26,16 +26,11 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
         return saved ? JSON.parse(saved) : false;
     });
 
-
     const getConversation = async () => {
         try {
             const response = await chatService.getConversations(conversations.id);
             if (response.data) {
                 console.log(response.data.messagesHistory);
-                for (const message of response.data.messagesHistory) {
-                    console.log(message);
-                    setMessages(prevMessages => [...prevMessages, message]);
-                }
                 setMessages(response.data.messagesHistory || []);
             }
         } catch (error) {
@@ -57,34 +52,21 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
 
     const handleSendMessage = async () => {
         console.log("in handle send message");
-        console.log(newMessage.trim());
         if (newMessage.trim() && selectedUser) {
-            const resData = JSON.parse(localStorage.getItem('persist:chat') || '{}');
-            const conversationData = JSON.parse(resData.conversations);
-            const currentUser = JSON.parse(resData.user);
-
+            const conversationData = JSON.parse(localStorage.getItem('persist:chat') || '{}');
             const newMsg = {
-                conversationId: conversationData.id,
+                conversationId: JSON.parse(conversationData.conversations).id,
                 senderId: currentUser.id,
                 receiverId: selectedUser.id,
                 message: newMessage.trim(),
             };
-            console.log(newMsg);
-            await chatService.sendMessage(newMsg);
 
-            // Clear messages before fetching the latest ones
+            await chatService.sendMessage(newMsg);
             setMessages([]);
             getConversation();
             setNewMessage('');
         }
     };
-
-    const filteredMessages = selectedUser
-        ? messages.filter(msg =>
-            msg.senderId === selectedUser.id ||
-            msg.senderId === JSON.parse(localStorage.getItem('currentUser') || '{}').id
-        )
-        : [];
 
     const handleNavigate = (section: 'chats' | 'settings' | 'payments') => {
         setActiveSection(section);
@@ -118,10 +100,10 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                                 </div>
 
                                 <div className="messages-container">
-                                    {filteredMessages.map(msg => (
+                                    {messages.map(msg => (
                                         <div
                                             key={msg.id}
-                                            className={`message ${msg.senderId === JSON.parse(localStorage.getItem('currentUser') || '{}').id ? 'sent' : 'received'}`}
+                                            className={`message ${msg.sender_id === currentUser.id ? 'sent' : 'received'}`}
                                         >
                                             <div className="message-bubble">
                                                 <p>{msg.message}</p>

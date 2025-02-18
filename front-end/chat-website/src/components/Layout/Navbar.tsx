@@ -7,6 +7,7 @@ import {
     faCog,
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import { currentUser } from '../Common/commonData';
 
 interface NavigationBarProps {
     onLogout: () => void;
@@ -16,7 +17,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onLogout }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
-    const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
