@@ -106,7 +106,7 @@ export class ChatService {
       },
       order: {
         messages: {
-          created_at: 'DESC',
+          created_at: 'ASC',
         },
       },
     });

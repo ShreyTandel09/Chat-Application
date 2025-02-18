@@ -10,4 +10,8 @@ export const chatService = {
         console.log(response);
         return response;
     },
+    sendMessage: async (data: any) => {
+        const response = await axiosInstance.post('/api/chat/send-message', data);
+        return response;
+    }
 };

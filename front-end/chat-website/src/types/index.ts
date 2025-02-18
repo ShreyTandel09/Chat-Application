@@ -22,8 +22,8 @@ export interface SignUpFormData extends AuthFormData {
 export interface Message {
   id: number;
   senderId: number;
-  content: string;
-  timestamp: Date;
+  message: string;
+  created_at: Date;
 } 
 
 export interface Conversation {

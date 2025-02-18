@@ -16,7 +16,7 @@ interface ChatLayoutProps {
 
 const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
     const conversations = useSelector((state: any) => state.conversation.conversations);
-    const [messages, setMessages] = useState<Message[]>(dummyMessages);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -31,7 +31,12 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
         try {
             const response = await chatService.getConversations(conversations.id);
             if (response.data) {
-                setMessages(response.data.messages || []);
+                console.log(response.data.messagesHistory);
+                for (const message of response.data.messagesHistory) {
+                    console.log(message);
+                    setMessages(prevMessages => [...prevMessages, message]);
+                }
+                setMessages(response.data.messagesHistory || []);
             }
         } catch (error) {
             console.error('Error fetching messages:', error);
@@ -50,16 +55,26 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
         scrollToBottom();
     }, [messages]);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
+        console.log("in handle send message");
+        console.log(newMessage.trim());
         if (newMessage.trim() && selectedUser) {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            const newMsg: Message = {
-                id: messages.length + 1,
+            const resData = JSON.parse(localStorage.getItem('persist:chat') || '{}');
+            const conversationData = JSON.parse(resData.conversations);
+            const currentUser = JSON.parse(resData.user);
+
+            const newMsg = {
+                conversationId: conversationData.id,
                 senderId: currentUser.id,
-                content: newMessage,
-                timestamp: new Date()
+                receiverId: selectedUser.id,
+                message: newMessage.trim(),
             };
-            setMessages([...messages, newMsg]);
+            console.log(newMsg);
+            await chatService.sendMessage(newMsg);
+
+            // Clear messages before fetching the latest ones
+            setMessages([]);
+            getConversation();
             setNewMessage('');
         }
     };
@@ -109,9 +124,9 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                                             className={`message ${msg.senderId === JSON.parse(localStorage.getItem('currentUser') || '{}').id ? 'sent' : 'received'}`}
                                         >
                                             <div className="message-bubble">
-                                                <p>{msg.content}</p>
+                                                <p>{msg.message}</p>
                                                 <span className="message-time">
-                                                    {new Date(msg.timestamp).toLocaleTimeString([], {
+                                                    {new Date(msg.created_at).toLocaleTimeString([], {
                                                         hour: '2-digit',
                                                         minute: '2-digit'
                                                     })}
@@ -132,7 +147,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                                     />
                                     <button
                                         className="send-button"
-                                        onClick={handleSendMessage}
+                                        onClick={() => handleSendMessage()}
                                         disabled={!newMessage.trim()}
                                     >
                                         Send
