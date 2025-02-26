@@ -3,14 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conversation } from './entities/conversation.entity';
 import { MessageHistory } from './entities/message.entity';
-import { CreateConversationDto } from './dto/create-conversaton.dto';
+import { CreateConversationDto } from './dto/chat.dto';
 import { User } from 'src/users/entities/user.entity';
-import { SendMessageDto } from './dto/send-message.dto';
-import { MarkAsReadDto } from './dto/mark-read.dto';
+import { SendMessageDto } from './dto/chat.dto';
+import { MarkAsReadDto } from './dto/chat.dto';
 import {
   ChatResponse,
   UnreadMessagesResponse,
-  ConversationWithMessages,
   GetAllConversationsResponse,
 } from './interfaces/chat.interface';
 
@@ -24,6 +23,36 @@ export class ChatService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
+  /**
+   * Generates a unique conversation ID
+   * Combines timestamp, random string, and user IDs for uniqueness
+   */
+  generateUniqueConversationId(userId1: number, userId2: number): string {
+    // Current timestamp in milliseconds
+    const timestamp = Date.now().toString(36);
+
+    // Random component (8 characters)
+    const randomPart = Math.random().toString(36).substring(2, 10);
+
+    // User IDs (sorted to ensure same ID regardless of order)
+    const userPart = [userId1, userId2].sort().join('_');
+
+    // Combine all parts
+    const rawId = `${timestamp}_${randomPart}_${userPart}`;
+
+    // Create a hash of the raw ID (optional, for shorter IDs)
+    // Using simple string manipulation for demo
+    // In production, consider a proper hashing function
+    let hash = 0;
+    for (let i = 0; i < rawId.length; i++) {
+      const char = rawId.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+
+    // Return the final ID (combining hash and timestamp for uniqueness and sortability)
+    return `${timestamp}_${Math.abs(hash).toString(36)}`;
+  }
 
   async getAllConversations(id: number): Promise<GetAllConversationsResponse> {
     const conversations = await this.conversationRepository.find({
@@ -35,7 +64,7 @@ export class ChatService {
     };
   }
 
-  async createConversation(body: CreateConversationDto): Promise<ChatResponse> {
+  async createConversation(body: CreateConversationDto): Promise<Conversation> {
     const { clientId1, clientId2 } = body;
 
     if (clientId1 === clientId2) {
@@ -71,29 +100,25 @@ export class ChatService {
     });
 
     if (existingConversation) {
-      return {
-        message: 'Conversation already exists',
-        data: existingConversation,
-      };
+      return existingConversation;
     }
+
+    const uniqueId = this.generateUniqueConversationId(user1.id, user2.id);
 
     const conversation = this.conversationRepository.create({
       participant_id: user1.id,
       creator_id: user2.id,
-      title: `${user1.first_name} ${user1.last_name} _ ${user2.first_name} ${user2.last_name}`,
-      description: `${user2.first_name} ${user2.last_name}`,
-      metadata: {},
+      title: uniqueId, // Store the unique ID
+      created_at: new Date(),
+      updated_at: new Date(),
     });
     //save conversation
     const savedConversation =
       await this.conversationRepository.save(conversation);
-    return {
-      message: 'Conversation created successfully',
-      data: savedConversation,
-    };
+    return savedConversation;
   }
 
-  async getConversation(id: number): Promise<ConversationWithMessages> {
+  async getConversation(id: number): Promise<Conversation> {
     if (!id) {
       throw new BadRequestException('Conversation ID is required');
     }
@@ -111,11 +136,7 @@ export class ChatService {
       },
     });
 
-    return {
-      message: 'Conversation retrieved successfully',
-      conversation,
-      messagesHistory: conversation.messages,
-    };
+    return conversation;
   }
 
   async sendMessage(body: SendMessageDto): Promise<ChatResponse> {
@@ -164,5 +185,33 @@ export class ChatService {
       message: 'Messages marked as read',
       success: true,
     };
+  }
+
+  async getReceiverId(
+    conversationId: number,
+    senderId: number,
+  ): Promise<number> {
+    const conversation = await this.conversationRepository.findOne({
+      where: [
+        {
+          id: conversationId,
+          participant_id: senderId,
+        },
+        {
+          id: conversationId,
+          creator_id: senderId,
+        },
+      ],
+    });
+
+    if (!conversation) {
+      throw new BadRequestException('Conversation not found');
+    }
+
+    const receiverId =
+      conversation.participant_id === senderId
+        ? conversation.creator_id
+        : conversation.participant_id;
+    return receiverId;
   }
 }

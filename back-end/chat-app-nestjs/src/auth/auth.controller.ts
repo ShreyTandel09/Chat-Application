@@ -12,12 +12,14 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { SignUpDto } from './validator/authValidator/sign-up.dto';
-import { SignInDto } from './validator/authValidator/sign-in.dto';
-import { EmailVerifyDto } from './validator/authValidator/email-verify.dto';
+import {
+  SignUpDto,
+  SignInDto,
+  EmailVerifyDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from './validator/authValidator/auth.dto';
 import { join } from 'path';
-import { ForgotPasswordDto } from './validator/authValidator/forgot-password.dto';
-import { ResetPasswordDto } from './validator/authValidator/reset-password.dto';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)

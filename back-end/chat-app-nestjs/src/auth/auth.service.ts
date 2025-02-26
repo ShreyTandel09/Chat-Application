@@ -9,11 +9,13 @@ import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { TokenService } from './token.service';
 import { EmailService } from 'src/email/email.service';
-import { SignUpDto } from './validator/authValidator/sign-up.dto';
-import { SignInDto } from './validator/authValidator/sign-in.dto';
-import { EmailVerifyDto } from './validator/authValidator/email-verify.dto';
-import { ForgotPasswordDto } from './validator/authValidator/forgot-password.dto';
-import { ResetPasswordDto } from './validator/authValidator/reset-password.dto';
+import {
+  SignUpDto,
+  SignInDto,
+  EmailVerifyDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from './validator/authValidator/auth.dto';
 import { AuthResponse } from './interfaces/auth.interface';
 import * as bcrypt from 'bcrypt';
 

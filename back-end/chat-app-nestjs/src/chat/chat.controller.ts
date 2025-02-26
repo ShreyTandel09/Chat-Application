@@ -10,18 +10,23 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { CreateConversationDto } from './dto/create-conversaton.dto';
-import { SendMessageDto } from './dto/send-message.dto';
-import { MarkAsReadDto } from './dto/mark-read.dto';
+import { CreateConversationDto } from './dto/chat.dto';
+import { SendMessageDto } from './dto/chat.dto';
+import { MarkAsReadDto } from './dto/chat.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { GetUser } from '../decorators/get-user.decorator';
 import { User } from '../users/entities/user.entity';
+import { ConversationWithMessages } from './interfaces/chat.interface';
+// import { ChatGateway } from './chat.gateway';
 
 @Controller('chat')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    // private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Get('get-all-conversations')
   async getAllConversations(@GetUser() user: User) {
@@ -43,9 +48,15 @@ export class ChatController {
   }
 
   @Get('get-conversation')
-  async getConversation(@Query('id') id: number) {
+  async getConversation(
+    @Query('id') id: number,
+  ): Promise<ConversationWithMessages> {
     const resData = await this.chatService.getConversation(id);
-    return resData;
+    return {
+      message: 'Conversation retrieved successfully',
+      conversation: resData,
+      messagesHistory: resData.messages,
+    };
   }
 
   @Post('send-message')
