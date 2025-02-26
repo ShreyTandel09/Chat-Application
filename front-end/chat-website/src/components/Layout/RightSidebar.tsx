@@ -50,8 +50,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             clientId2: currentUser.id,
         };
         const response = await chatService.createConversation(data);
-        dispatch(setConversations(response.data.data));
-        onGetConversation(response.data.data.id)
+        dispatch(setConversations(response.data));
+        onGetConversation(response.data.id)
     };
 
     const getStatusColor = (status: string) => {

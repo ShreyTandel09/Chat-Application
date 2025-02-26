@@ -55,6 +55,7 @@ const App: React.FC = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('persist:chat');
+        dispatch(logout());
         window.location.href = '/signin';
     };
 
