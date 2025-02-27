@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsObject, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { User } from '../../users/entities/user.entity';
 
 export class CreateConversationDto {
@@ -42,15 +42,9 @@ export class SendMessageDto {
 }
 
 export class RegisterPayload {
-  @IsNotEmpty({ message: 'Event is required' })
-  @IsString()
-  event: string;
-
-  @IsNotEmpty({ message: 'Data is required' })
-  @IsObject()
-  data: {
-    userId: string;
-  };
+  @IsNotEmpty({ message: 'User ID is required' })
+  @IsNumber()
+  userId: number;
 }
 
 export class ConversationId {

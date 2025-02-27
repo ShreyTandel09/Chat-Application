@@ -72,7 +72,8 @@ export class ChatGateway
   async handleRegister(client: Socket, payload: RegisterPayload) {
     try {
       const parsedPayload = this.parsePayload<RegisterPayload>(payload);
-      const userId = Number(parsedPayload.data.userId);
+
+      const userId = Number(parsedPayload);
 
       // Store socket mapping
       this.userSocketMap.set(userId, client.id);

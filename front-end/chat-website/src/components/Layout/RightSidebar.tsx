@@ -49,9 +49,18 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             clientId1: user.id,
             clientId2: currentUser.id,
         };
-        const response = await chatService.createConversation(data);
-        dispatch(setConversations(response.data));
-        onGetConversation(response.data.id)
+        try {
+            const response = await chatService.createConversation(data);
+            dispatch(setConversations(response.data));
+
+            // Join the conversation room via socket
+            chatService.joinConversation(response.data.id);
+
+            // Get conversation history
+            onGetConversation(response.data.id);
+        } catch (error) {
+            console.error('Error creating conversation:', error);
+        }
     };
 
     const getStatusColor = (status: string) => {

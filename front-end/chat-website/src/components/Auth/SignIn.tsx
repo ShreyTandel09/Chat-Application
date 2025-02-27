@@ -8,14 +8,11 @@ import { toast } from 'react-toastify';
 import { authService } from '../../services/api/authApi/authService';
 import Loader from '../Common/Loader';
 import { useDispatch } from 'react-redux';
-import { login, setAccessToken, setCurrentUser, setRefreshToken } from '../../redux/slices/auth/authSlice';
+import { login, setAccessToken, setCurrentUser, setIsAuthenticated, setRefreshToken } from '../../redux/slices/auth/authSlice';
+import socketService from '../../services/socketService';
 
-interface SignInProps {
-    onToggleAuth?: () => void;
-    setIsAuthenticated: (value: boolean) => void;
-}
 
-const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => {
+const SignIn: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
@@ -59,6 +56,8 @@ const SignIn: React.FC<SignInProps> = ({ onToggleAuth, setIsAuthenticated }) => 
                 dispatch(setRefreshToken(response.data.refreshToken));
                 dispatch(setCurrentUser(response.data.user));
                 toast.success('Login successful!');
+                dispatch(setIsAuthenticated(true));
+                socketService.registerUser(response.data.user.id);
                 navigate('/chat');
             }
         } catch (error: any) {

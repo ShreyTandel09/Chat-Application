@@ -13,9 +13,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import './styles/loader.css';
 import ForgotPassword from './components/Auth/forgot-password';
 import ResetPassword from './components/Auth/reset-password';
+import socketService from './services/socketService';
+
 
 const App: React.FC = () => {
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const currentUser = useSelector((state: RootState) => state.auth.currentUser);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -48,12 +51,23 @@ const App: React.FC = () => {
         }
     }, [dispatch]);
 
-    const handleLogin = () => {
-        const user = localStorage.getItem('currentUser');
-        dispatch(login(user));
-    };
+    // Initialize socket when user is authenticated
+    useEffect(() => {
+        // socketService.connect();
+        if (isAuthenticated && currentUser) {
+            // Connect to socket
+            socketService.connect(); // Re-register user
+            console.log('Socket connected>>>>>>>>>>>:');
+        } else {
+            // Disconnect socket when not authenticated
+            socketService.disconnect();
+            console.log('Socket disconnected');
+        }
+    }, [isAuthenticated, currentUser]);
+
 
     const handleLogout = () => {
+        socketService.disconnect();
         localStorage.removeItem('persist:chat');
         dispatch(logout());
         window.location.href = '/signin';
@@ -75,10 +89,9 @@ const App: React.FC = () => {
             <BrowserRouter>
                 <Routes>
                     <Route path="/signin" element={
-                        <SignIn setIsAuthenticated={handleLogin} />
+                        <SignIn />
                     } />
                     <Route path="/verify-email" element={<VerifyEmail />} />
-
                     <Route path="/signup" element={
                         <SignUp />
                     } />
@@ -86,11 +99,9 @@ const App: React.FC = () => {
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/chat" element={
                         <ChatLayout onLogout={handleLogout} />
-                        // <Navigate to="/chat" replace />
                     } />
                     <Route path="/" element={<Navigate to="/signin" replace />} />
                 </Routes>
-
             </BrowserRouter>
         </>
     );

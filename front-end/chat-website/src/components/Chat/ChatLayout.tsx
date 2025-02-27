@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import NavigationBar from '../Layout/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faComments } from '@fortawesome/free-solid-svg-icons';
@@ -8,6 +8,7 @@ import LeftSidebar from '../Layout/LeftSidebar';
 import '../../styles/chat.css';
 import { chatService } from '../../services/api/chat/chatService';
 import { useSelector } from 'react-redux';
+import socketService from '../../services/socketService';
 
 interface ChatLayoutProps {
     onLogout: () => void;
@@ -26,17 +27,46 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
     });
     const currentUser = useSelector((state: any) => state.auth.currentUser);
 
-    const getConversation = async (id: number) => {
+    // Initialize socket connection
+    useEffect(() => {
+        socketService.connect();
+        // Clean up on unmount
+        return () => {
+            socketService.disconnect();
+        };
+    }, []);
+
+    // Set up message listener
+    useEffect(() => {
+        socketService.onNewMessage((newMsg) => {
+            setMessages(prevMessages => [...prevMessages, {
+                id: newMsg.id || Date.now(),
+                message: newMsg.message,
+                sender_id: newMsg.senderId,
+                receiver_id: newMsg.receiverId,
+                created_at: newMsg.created_at || new Date().toISOString(),
+                updated_at: newMsg.updated_at || new Date().toISOString()
+            }]);
+        });
+
+        return () => {
+            socketService.removeListener('newMessage');
+        };
+    }, []);
+
+    const getConversation = useCallback(async (id: number) => {
         try {
             const response = await chatService.getConversations(id);
             if (response.data) {
-                console.log(response.data.messagesHistory);
                 setMessages(response.data.messagesHistory || []);
+
+                // Join the conversation room via socket
+                chatService.joinConversation(id);
             }
         } catch (error) {
             console.error('Error fetching messages:', error);
         }
-    }
+    }, []);
 
     useEffect(() => {
         localStorage.setItem('sidebarCollapsed', JSON.stringify(isLeftSidebarCollapsed));
@@ -50,21 +80,28 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
         scrollToBottom();
     }, [messages]);
 
-    const handleSendMessage = async () => {
-        console.log("in handle send message");
-        if (newMessage.trim() && selectedUser) {
-            const res = JSON.parse(localStorage.getItem('persist:chat') || '{}');
-            const conversationData = JSON.parse(res.conversations || '{}');
+    const handleSendMessage = () => {
+        if (newMessage.trim() && selectedUser && conversations) {
             const newMsg = {
-                conversationId: conversationData.id,
+                conversationId: conversations.id,
                 senderId: currentUser.id,
                 receiverId: selectedUser.id,
                 message: newMessage.trim(),
             };
 
-            await chatService.sendMessage(newMsg);
-            getConversation(conversationData.id);
-            setMessages([]);
+            // Send message via socket
+            chatService.sendMessage(newMsg);
+
+            // Optimistically add message to UI
+            // setMessages(prevMessages => [...prevMessages, {
+            //     id: Date.now(),
+            //     message: newMessage.trim(),
+            //     sender_id: currentUser.id,
+            //     receiver_id: selectedUser.id,
+            //     created_at: new Date().toISOString(),
+            //     updated_at: new Date().toISOString()
+            // }]);
+
             setNewMessage('');
         }
     };
@@ -130,7 +167,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
                                     />
                                     <button
                                         className="send-button"
-                                        onClick={() => handleSendMessage()}
+                                        onClick={handleSendMessage}
                                         disabled={!newMessage.trim()}
                                     >
                                         Send

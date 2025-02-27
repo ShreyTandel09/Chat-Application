@@ -1,4 +1,5 @@
 import { axiosInstance } from "../../axiosService";
+import socketService from "../../socketService";
 
 export const chatService = {
     createConversation: async (data: any) => {
@@ -10,8 +11,11 @@ export const chatService = {
         console.log(response);
         return response;
     },
-    sendMessage: async (data: any) => {
-        const response = await axiosInstance.post('/api/chat/send-message', data);
-        return response;
+    sendMessage: (data: any) => {
+        socketService.sendMessage(data);
+        return { status: 'pending' }; // Return a placeholder response
+    },
+    joinConversation: (conversationId: number) => {
+        socketService.joinConversation(conversationId);
     }
 };
