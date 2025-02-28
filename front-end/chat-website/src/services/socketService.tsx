@@ -3,8 +3,8 @@ import { io, Socket } from 'socket.io-client';
 
 
 class SocketService {
-    private socket: Socket | null = null;
     private static instance: SocketService;
+    private socket: Socket | null = null;
 
     private constructor() { }
 
@@ -17,6 +17,7 @@ class SocketService {
 
     public connect(): Socket {
         if (!this.socket) {
+            console.log('Connecting to socket...');
 
             this.socket = io(`${process.env.REACT_APP_API_URL}/chat`, {
                 transports: ['websocket'],
@@ -26,14 +27,9 @@ class SocketService {
                 reconnectionDelay: 1000,
             });
 
-
             this.socket.on('connect', () => {
-                const resData = JSON.parse(localStorage.getItem('persist:chat') || '{}');
-                const currentUser = resData.currentUser ? JSON.parse(resData.currentUser) : null;
-                this.registerUser(currentUser.id);
                 console.log('Socket connected:', this.socket?.id);
             });
-
 
             this.socket.on('disconnect', () => {
                 console.log('Socket disconnected');
@@ -49,6 +45,7 @@ class SocketService {
 
     public disconnect(): void {
         if (this.socket) {
+            console.log('Disconnecting socket...');
             this.socket.disconnect();
             this.socket = null;
         }

@@ -51,7 +51,6 @@ const SignIn: React.FC = () => {
             const response = await authService.signin(formData);
             if (response.status === 200) {
                 dispatch(login(response.data.user));
-                console.log(response.data);
                 dispatch(setAccessToken(response.data.accessToken));
                 dispatch(setRefreshToken(response.data.refreshToken));
                 dispatch(setCurrentUser(response.data.user));
