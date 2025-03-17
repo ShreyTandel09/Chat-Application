@@ -56,8 +56,12 @@ const App: React.FC = () => {
         // socketService.connect();
         if (isAuthenticated && currentUser) {
             // Connect to socket
-            socketService.connect(); // Re-register user
+            const socket = socketService.connect(); // Re-register user
             console.log('Socket connected>>>>>>>>>>>:');
+            if (socket) {
+                socketService.registerUser(currentUser.id);
+            }
+
         } else {
             // Disconnect socket when not authenticated
             socketService.disconnect();
@@ -67,9 +71,10 @@ const App: React.FC = () => {
 
 
     const handleLogout = () => {
-        socketService.disconnect();
-        localStorage.removeItem('persist:chat');
+        localStorage.removeItem('persist:auth');
+        localStorage.removeItem('persist:conversation')
         dispatch(logout());
+        socketService.disconnect();
         window.location.href = '/signin';
     };
 

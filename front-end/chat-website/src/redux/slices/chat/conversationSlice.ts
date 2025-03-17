@@ -9,8 +9,11 @@ const conversationSlice = createSlice({
         setConversations: (state, action) => {
             state.conversations = action.payload;
         },
+        clearConversations: (state) => {
+            state.conversations = null;
+        },
     },
 });
 
-export const { setConversations } = conversationSlice.actions;
+export const { setConversations, clearConversations } = conversationSlice.actions;
 export default conversationSlice.reducer;

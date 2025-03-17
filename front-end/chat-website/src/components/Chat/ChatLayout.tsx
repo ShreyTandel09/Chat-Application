@@ -27,14 +27,6 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
     });
     const currentUser = useSelector((state: any) => state.auth.currentUser);
 
-    // Initialize socket connection
-    useEffect(() => {
-        socketService.connect();
-        // Clean up on unmount
-        return () => {
-            socketService.disconnect();
-        };
-    }, []);
 
     // Set up message listener
     useEffect(() => {
