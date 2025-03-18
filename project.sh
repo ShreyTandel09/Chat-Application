@@ -140,6 +140,263 @@ setup_env() {
     fi
 }
 
+# Function to prompt for environment variable setup
+setup_user_env() {
+    local target=$1
+    
+    case $target in
+        "frontend")
+            if [[ ! -f "$FRONTEND_DIR/.env" ]]; then
+                log "info" "Frontend .env file not found"
+                read -p "Would you like to create a frontend environment file? (y/n): " create_env
+                
+                if [[ "$create_env" == "y" || "$create_env" == "Y" ]]; then
+                    # Check if .env.example exists
+                    if [[ -f "$FRONTEND_DIR/.env.example" ]]; then
+                        cp "$FRONTEND_DIR/.env.example" "$FRONTEND_DIR/.env"
+                        log "info" "Frontend .env file created from example"
+                    else
+                        # Create a default frontend .env
+                        cat > "$FRONTEND_DIR/.env" << EOF
+# API URL (Required)
+REACT_APP_API_URL=http://localhost:3000
+# or
+VITE_API_URL=http://localhost:3000
+
+# Public environment variables for React/Vue
+NODE_ENV=development
+EOF
+                        log "info" "Default frontend .env file created"
+                    fi
+                    
+                    log "info" "Please edit $FRONTEND_DIR/.env with your settings"
+                    read -p "Press enter to open the file for editing (or n to skip): " edit_now
+                    
+                    if [[ "$edit_now" != "n" && "$edit_now" != "N" ]]; then
+                        # Try to open with available editors
+                        if command_exists nano; then
+                            nano "$FRONTEND_DIR/.env"
+                        elif command_exists vim; then
+                            vim "$FRONTEND_DIR/.env"
+                        elif command_exists vi; then
+                            vi "$FRONTEND_DIR/.env"
+                        else
+                            log "warning" "No suitable editor found. Please edit $FRONTEND_DIR/.env manually."
+                        fi
+                    fi
+                    
+                    log "success" "Frontend environment setup completed"
+                else
+                    log "warning" "Frontend environment setup skipped"
+                fi
+            fi
+            ;;
+            
+        "backend")
+            # For NestJS backend
+            if [[ ! -f "$BACKEND_NESTJS_DIR/.env" ]]; then
+                log "info" "NestJS backend .env file not found"
+                read -p "Would you like to create a NestJS backend environment file? (y/n): " create_env
+                
+                if [[ "$create_env" == "y" || "$create_env" == "Y" ]]; then
+                    # Check if .env.example exists first
+                    if [[ -f "$BACKEND_NESTJS_DIR/.env.example" ]]; then
+                        cp "$BACKEND_NESTJS_DIR/.env.example" "$BACKEND_NESTJS_DIR/.env"
+                        log "info" "NestJS backend .env file created from example"
+                    else
+                        # Create a default .env file if no example exists
+                        log "info" "Creating default backend .env file"
+                    fi
+                    
+                    # Prompt for mandatory SMTP settings regardless of whether we copied from example
+                    log "info" "Setting up mandatory SMTP configuration..."
+                    
+                    # SMTP Host
+                    while true; do
+                        read -p "Enter SMTP host (required): " smtp_host
+                        if [[ -n "$smtp_host" ]]; then
+                            break
+                        else
+                            log "error" "SMTP host is required"
+                        fi
+                    done
+                    
+                    # SMTP Port
+                    while true; do
+                        read -p "Enter SMTP port (required): " smtp_port
+                        if [[ -n "$smtp_port" && "$smtp_port" =~ ^[0-9]+$ ]]; then
+                            break
+                        else
+                            log "error" "A valid SMTP port is required (numbers only)"
+                        fi
+                    done
+                    
+                    # SMTP User
+                    while true; do
+                        read -p "Enter SMTP username/email (required): " smtp_user
+                        if [[ -n "$smtp_user" ]]; then
+                            break
+                        else
+                            log "error" "SMTP username is required"
+                        fi
+                    done
+                    
+                    # SMTP Password
+                    while true; do
+                        read -sp "Enter SMTP password (required): " smtp_password
+                        echo
+                        if [[ -n "$smtp_password" ]]; then
+                            break
+                        else
+                            log "error" "SMTP password is required"
+                        fi
+                    done
+                    
+                    # SMTP From Name
+                    while true; do
+                        read -p "Enter SMTP from name (required): " smtp_from_name
+                        if [[ -n "$smtp_from_name" ]]; then
+                            break
+                        else
+                            log "error" "SMTP from name is required"
+                        fi
+                    done
+                    
+                    # If we didn't copy from example, create a complete .env file
+                    if [[ ! -f "$BACKEND_NESTJS_DIR/.env.example" ]]; then
+                        # Create a default .env file with common NestJS variables and SMTP config
+                        cat > "$BACKEND_NESTJS_DIR/.env" << EOF
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=chat_app
+
+# JWT Configuration
+JWT_SECRET=your_secret_key
+JWT_EXPIRATION_TIME=3600
+
+# Application Configuration
+PORT=3000
+NODE_ENV=development
+
+# SMTP Configuration (Required)
+SMTP_HOST=$smtp_host
+SMTP_PORT=$smtp_port
+SMTP_USER=$smtp_user
+SMTP_PASSWORD=$smtp_password
+SMTP_FROM_NAME=$smtp_from_name
+EOF
+                        log "info" "Default NestJS backend .env file created with SMTP configuration"
+                    else
+                        # If we copied from example, ensure SMTP settings are in the file
+                        # First check if SMTP settings are already in the file
+                        if ! grep -q "SMTP_HOST" "$BACKEND_NESTJS_DIR/.env"; then
+                            # Append SMTP settings if not present
+                            {
+                                echo ""
+                                echo "# SMTP Configuration (Required)"
+                                echo "SMTP_HOST=$smtp_host"
+                                echo "SMTP_PORT=$smtp_port"
+                                echo "SMTP_USER=$smtp_user"
+                                echo "SMTP_PASSWORD=$smtp_password"
+                                echo "SMTP_FROM_NAME=$smtp_from_name"
+                            } >> "$BACKEND_NESTJS_DIR/.env"
+                            log "info" "SMTP configuration added to .env file"
+                        else
+                            # If SMTP settings exist, update them
+                            sed -i "s/SMTP_HOST=.*/SMTP_HOST=$smtp_host/" "$BACKEND_NESTJS_DIR/.env"
+                            sed -i "s/SMTP_PORT=.*/SMTP_PORT=$smtp_port/" "$BACKEND_NESTJS_DIR/.env"
+                            sed -i "s/SMTP_USER=.*/SMTP_USER=$smtp_user/" "$BACKEND_NESTJS_DIR/.env"
+                            sed -i "s/SMTP_PASSWORD=.*/SMTP_PASSWORD=$smtp_password/" "$BACKEND_NESTJS_DIR/.env"
+                            sed -i "s/SMTP_FROM_NAME=.*/SMTP_FROM_NAME=$smtp_from_name/" "$BACKEND_NESTJS_DIR/.env"
+                            log "info" "SMTP configuration updated in .env file"
+                        fi
+                    fi
+                    
+                    log "info" "Please review the rest of the $BACKEND_NESTJS_DIR/.env file with your settings"
+                    read -p "Press enter to open the file for editing (or n to skip): " edit_now
+                    
+                    if [[ "$edit_now" != "n" && "$edit_now" != "N" ]]; then
+                        # Try to open with available editors
+                        if command_exists nano; then
+                            nano "$BACKEND_NESTJS_DIR/.env"
+                        elif command_exists vim; then
+                            vim "$BACKEND_NESTJS_DIR/.env"
+                        elif command_exists vi; then
+                            vi "$BACKEND_NESTJS_DIR/.env"
+                        else
+                            log "warning" "No suitable editor found. Please edit $BACKEND_NESTJS_DIR/.env manually."
+                        fi
+                    fi
+                    
+                    log "success" "NestJS backend environment setup completed"
+                else
+                    log "warning" "NestJS backend environment setup skipped"
+                fi
+            fi
+            
+            # Check for other backend directory if it exists
+            if [[ -d "$BACKEND_OTHER_DIR" && ! -f "$BACKEND_OTHER_DIR/.env" ]]; then
+                log "info" "Other backend .env file not found"
+                read -p "Would you like to set up the other backend environment variables? (y/n): " setup_env
+                
+                if [[ "$setup_env" == "y" || "$setup_env" == "Y" ]]; then
+                    if [[ -f "$BACKEND_OTHER_DIR/.env.example" ]]; then
+                        cp "$BACKEND_OTHER_DIR/.env.example" "$BACKEND_OTHER_DIR/.env"
+                        log "info" "Other backend .env file created from example"
+                    else
+                        # Create a simple default .env file for other backend
+                        cat > "$BACKEND_OTHER_DIR/.env" << EOF
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=chat_app
+
+# JWT Configuration
+JWT_SECRET=your_secret_key
+JWT_EXPIRATION_TIME=3600
+
+# Application Configuration
+PORT=3001  # Different from NestJS backend
+NODE_ENV=development
+EOF
+                        log "info" "Default other backend .env file created"
+                    fi
+                    
+                    log "info" "Please edit $BACKEND_OTHER_DIR/.env with your settings"
+                    read -p "Press enter to open the file for editing (or n to skip): " edit_now
+                    
+                    if [[ "$edit_now" != "n" && "$edit_now" != "N" ]]; then
+                        # Try to open with available editors
+                        if command_exists nano; then
+                            nano "$BACKEND_OTHER_DIR/.env"
+                        elif command_exists vim; then
+                            vim "$BACKEND_OTHER_DIR/.env"
+                        elif command_exists vi; then
+                            vi "$BACKEND_OTHER_DIR/.env"
+                        else
+                            log "warning" "No suitable editor found. Please edit $BACKEND_OTHER_DIR/.env manually."
+                        fi
+                    fi
+                    
+                    log "success" "Other backend environment setup completed"
+                else
+                    log "warning" "Other backend environment setup skipped"
+                fi
+            fi
+            ;;
+            
+        "all")
+            setup_user_env "frontend"
+            setup_user_env "backend"
+            ;;
+    esac
+}
+
 # Function to install dependencies
 install_deps() {
     local target=$1
@@ -148,6 +405,9 @@ install_deps() {
     if [[ "$ENV" == "production" ]]; then
         prod_flag="--production"
     fi
+    
+    # First, set up the environment variables
+    setup_user_env "$target"
     
     case $target in
         "frontend")
