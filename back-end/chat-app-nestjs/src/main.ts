@@ -7,13 +7,38 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Enable CORS
   app.enableCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost/*'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl requests)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      // Get allowed origins from env or use default
+      const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+        'http://localhost:3001',
+        'http://localhost:3000',
+      ];
+
+      // Allow all localhost origins regardless of port
+      if (
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('https://localhost:')
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      // Check against allowed origins for non-localhost domains
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'), false);
+      }
+    },
     credentials: true,
   });
-
   // Set global prefix for all routes
   app.setGlobalPrefix('api');
 

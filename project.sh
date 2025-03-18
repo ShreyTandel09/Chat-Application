@@ -346,16 +346,20 @@ EOF
 DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
-DB_PASSWORD=postgres
-DB_DATABASE=chat_app
+DB_PASSWORD=password
+DB_NAME=chat_app
 
 # JWT Configuration
-JWT_SECRET=your_secret_key
-JWT_EXPIRATION_TIME=3600
+JWT_SECRET=your_jwt_secret_key_here
+JWT_EXPIRATION=24h
+JWT_REFRESH_SECRET=your_refresh_secret_key_here
 
-# Application Configuration
+# Server Configuration
 PORT=9000
 NODE_ENV=development
+
+# CORS Configuration
+ALLOWED_ORIGINS=http://localhost:*,http://localhost:3001,http://localhost:3000
 
 # SMTP Configuration (Required)
 SMTP_HOST=$smtp_host
