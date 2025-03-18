@@ -37,6 +37,8 @@ show_usage() {
     echo -e "  build                     Build all projects"
     echo -e "  start                     Start all projects"
     echo -e "  dev                       Start both frontend and backend in development mode"
+    echo -e "  dev frontend              Start only frontend in development mode"
+    echo -e "  dev backend               Start only backend in development mode"
     echo -e "  frontend                  Run commands only for frontend"
     echo -e "  backend                   Run commands only for backend"
     echo -e "  docker                    Manage Docker environments"
@@ -46,6 +48,8 @@ show_usage() {
     echo -e "  ./project.sh -e production install      # Install all dependencies in production mode"
     echo -e "  ./project.sh frontend install           # Install only frontend dependencies"
     echo -e "  ./project.sh dev                        # Start both frontend and backend in development mode"
+    echo -e "  ./project.sh dev frontend               # Start only frontend in development mode"
+    echo -e "  ./project.sh dev backend                # Start only backend in development mode"
     echo -e "  ./project.sh docker start               # Start Docker containers"
 }
 
@@ -140,6 +144,78 @@ setup_env() {
     fi
 }
 
+# Function to start frontend in development mode
+start_frontend_dev() {
+    log "info" "Starting frontend in development mode..."
+    cd "$FRONTEND_DIR" || exit 1
+    npm run start || npm run dev
+    cd - || exit 1
+}
+
+# Function to start backend in development mode
+start_backend_dev() {
+    log "info" "Starting backend in development mode..."
+    cd "$BACKEND_NESTJS_DIR" || exit 1
+    npm run start:dev
+    cd - || exit 1
+}
+
+# Function to start both frontend and backend in development mode
+start_dev_mode() {
+    local component=$1
+    
+    case $component in
+        "frontend")
+            start_frontend_dev
+            ;;
+        "backend")
+            start_backend_dev
+            ;;
+        *)
+            # Start both using tmux or background processes
+            log "info" "Starting both frontend and backend in development mode..."
+            
+            # Check if tmux is installed
+            if command_exists tmux; then
+                # Start a new tmux session
+                tmux new-session -d -s chat-app
+                
+                # Split the window horizontally
+                tmux split-window -h
+                
+                # Run frontend in the left pane
+                tmux send-keys -t chat-app:0.0 "cd $FRONTEND_DIR && npm run start" C-m
+                
+                # Run backend in the right pane
+                tmux send-keys -t chat-app:0.1 "cd $BACKEND_NESTJS_DIR && npm run start:dev" C-m
+                
+                # Attach to the tmux session
+                tmux attach-session -t chat-app
+                
+                log "success" "Development servers started in tmux session"
+            else
+                # Alternative method using background processes if tmux is not available
+                log "warning" "tmux not found, using background processes instead"
+                log "info" "Starting backend in the background..."
+                
+                # Start the backend in the background
+                (cd "$BACKEND_NESTJS_DIR" && npm run start:dev) &
+                BACKEND_PID=$!
+                
+                # Wait a moment to allow backend to start
+                sleep 5
+                
+                log "info" "Starting frontend..."
+                # Start the frontend in the foreground
+                cd "$FRONTEND_DIR" && npm run start
+                
+                # Kill the backend process when the frontend is stopped
+                kill $BACKEND_PID
+            fi
+            ;;
+    esac
+}
+
 # Function to prompt for environment variable setup
 setup_user_env() {
     local target=$1
@@ -159,9 +235,9 @@ setup_user_env() {
                         # Create a default frontend .env
                         cat > "$FRONTEND_DIR/.env" << EOF
 # API URL (Required)
-REACT_APP_API_URL=http://localhost:3000
+REACT_APP_API_URL=http://localhost:9000
 # or
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:9000
 
 # Public environment variables for React/Vue
 NODE_ENV=development
@@ -278,7 +354,7 @@ JWT_SECRET=your_secret_key
 JWT_EXPIRATION_TIME=3600
 
 # Application Configuration
-PORT=3000
+PORT=9000
 NODE_ENV=development
 
 # SMTP Configuration (Required)
@@ -635,49 +711,6 @@ manage_docker() {
     esac
 }
 
-# Function to start both frontend and backend in development mode
-start_dev_mode() {
-    log "info" "Starting both frontend and backend in development mode..."
-    
-    # Check if tmux is installed
-    if command_exists tmux; then
-        # Start a new tmux session
-        tmux new-session -d -s chat-app
-        
-        # Split the window horizontally
-        tmux split-window -h
-        
-        # Run frontend in the left pane
-        tmux send-keys -t chat-app:0.0 "cd $FRONTEND_DIR && npm run start" C-m
-        
-        # Run backend in the right pane
-        tmux send-keys -t chat-app:0.1 "cd $BACKEND_NESTJS_DIR && npm run start:dev" C-m
-        
-        # Attach to the tmux session
-        tmux attach-session -t chat-app
-        
-        log "success" "Development servers started in tmux session"
-    else
-        # Alternative method using background processes if tmux is not available
-        log "warning" "tmux not found, using background processes instead"
-        log "info" "Starting backend in the background..."
-        
-        # Start the backend in the background
-        (cd "$BACKEND_NESTJS_DIR" && npm run start:dev) &
-        BACKEND_PID=$!
-        
-        # Wait a moment to allow backend to start
-        sleep 5
-        
-        log "info" "Starting frontend..."
-        # Start the frontend in the foreground
-        cd "$FRONTEND_DIR" && npm run start
-        
-        # Kill the backend process when the frontend is stopped
-        kill $BACKEND_PID
-    fi
-}
-
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -776,6 +809,22 @@ case $1 in
     "start")
         start_projects "all"
         ;;
+    "dev")
+        if [[ $# -gt 1 ]]; then
+            case $2 in
+                "frontend") start_dev_mode "frontend" ;;
+                "backend") start_dev_mode "backend" ;;
+                *)
+                    log "error" "Unknown target for dev command: $2"
+                    log "info" "Available targets: frontend, backend"
+                    exit 1
+                    ;;
+            esac
+        else
+            # Start both frontend and backend in dev mode
+            start_dev_mode
+        fi
+        ;;
     "docker")
         if [[ $# -lt 2 ]]; then
             log "error" "Missing command for Docker"
@@ -784,10 +833,6 @@ case $1 in
         fi
         
         manage_docker "$2"
-        ;;
-    "dev")
-        # Start both frontend and backend in development mode
-        start_dev_mode
         ;;
     *)
         log "error" "Unknown command: $1"
