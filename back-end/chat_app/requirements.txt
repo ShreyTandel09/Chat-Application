@@ -1,4 +1,7 @@
 django>=5.0.6
 djangorestframework
 django-cors-headers
-python-dotenv 
+python-dotenv
+djangorestframework-simplejwt
+Pillow==10.2.0
+django-background-tasks>=1.2.5 

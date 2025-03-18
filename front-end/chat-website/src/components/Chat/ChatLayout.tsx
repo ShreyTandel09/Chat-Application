@@ -1,147 +1,196 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import NavigationBar from '../Layout/Navbar';
-import Footer from '../Layout/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faCircle } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faComments } from '@fortawesome/free-solid-svg-icons';
 import { Message, User } from '../../types';
-import { dummyMessages, dummyUsers } from '../../data/dummyData';
+import RightSidebar from '../Layout/RightSidebar';
+import LeftSidebar from '../Layout/LeftSidebar';
+import '../../styles/chat.css';
+import { chatService } from '../../services/api/chat/chatService';
+import { useSelector } from 'react-redux';
+import socketService from '../../services/socketService';
 
-const ChatLayout: React.FC = () => {
-    const [messages, setMessages] = useState<Message[]>(dummyMessages);
+interface ChatLayoutProps {
+    onLogout: () => void;
+}
+
+const ChatLayout: React.FC<ChatLayoutProps> = ({ onLogout }) => {
+    const conversations = useSelector((state: any) => state.conversation.conversations);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const messagesEndRef = React.useRef<HTMLDivElement>(null);
+    const [activeSection, setActiveSection] = useState<'chats' | 'settings' | 'payments'>('chats');
+    const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(() => {
+        const saved = localStorage.getItem('sidebarCollapsed');
+        return saved ? JSON.parse(saved) : false;
+    });
+    const currentUser = useSelector((state: any) => state.auth.currentUser);
+
+
+    // Set up message listener
+    useEffect(() => {
+        socketService.onNewMessage((newMsg) => {
+            setMessages(prevMessages => [...prevMessages, {
+                id: newMsg.id || Date.now(),
+                message: newMsg.message,
+                sender_id: newMsg.senderId,
+                receiver_id: newMsg.receiverId,
+                created_at: newMsg.created_at || new Date().toISOString(),
+                updated_at: newMsg.updated_at || new Date().toISOString()
+            }]);
+        });
+
+        return () => {
+            socketService.removeListener('newMessage');
+        };
+    }, []);
+
+    const getConversation = useCallback(async (id: number) => {
+        try {
+            const response = await chatService.getConversations(id);
+            if (response.data) {
+                setMessages(response.data.messagesHistory || []);
+
+                // Join the conversation room via socket
+                chatService.joinConversation(id);
+            }
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('sidebarCollapsed', JSON.stringify(isLeftSidebarCollapsed));
+    }, [isLeftSidebarCollapsed]);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const handleSendMessage = () => {
-        if (newMessage.trim() && selectedUser) {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            const newMsg: Message = {
-                id: messages.length + 1,
+        if (newMessage.trim() && selectedUser && conversations) {
+            const newMsg = {
+                conversationId: conversations.id,
                 senderId: currentUser.id,
-                content: newMessage,
-                timestamp: new Date()
+                receiverId: selectedUser.id,
+                message: newMessage.trim(),
             };
-            setMessages([...messages, newMsg]);
+
+            // Send message via socket
+            chatService.sendMessage(newMsg);
+
+            // Optimistically add message to UI
+            // setMessages(prevMessages => [...prevMessages, {
+            //     id: Date.now(),
+            //     message: newMessage.trim(),
+            //     sender_id: currentUser.id,
+            //     receiver_id: selectedUser.id,
+            //     created_at: new Date().toISOString(),
+            //     updated_at: new Date().toISOString()
+            // }]);
+
             setNewMessage('');
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('currentUser');
-        window.location.href = '/login';
+    const handleNavigate = (section: 'chats' | 'settings' | 'payments') => {
+        setActiveSection(section);
     };
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'online': return '#28a745';
-            case 'away': return '#ffc107';
-            default: return '#dc3545';
-        }
-    };
-
-    const filteredMessages = selectedUser
-        ? messages.filter(msg =>
-            msg.senderId === selectedUser.id ||
-            msg.senderId === JSON.parse(localStorage.getItem('currentUser') || '{}').id
-        )
-        : [];
 
     return (
-        <div className="app">
-            <NavigationBar onLogout={handleLogout} />
-            <div className="main-container">
-                {/* Left Sidebar - Contact List */}
-                <div className="left-sidebar">
-                    <div className="sidebar-header">
-                        <h5 className="m-3">Contacts</h5>
-                    </div>
-                    <div className="contacts-list">
-                        {dummyUsers.map(user => (
-                            <div
-                                key={user.id}
-                                className={`contact-item ${selectedUser?.id === user.id ? 'active' : ''}`}
-                                onClick={() => setSelectedUser(user as User)}
-                            >
-                                <FontAwesomeIcon icon={faUser} className="me-2" />
-                                <span>{user.name}</span>
-                                <FontAwesomeIcon
-                                    icon={faCircle}
-                                    className="ms-auto"
-                                    style={{
-                                        color: getStatusColor(user.status || 'offline'),
-                                        fontSize: '0.5rem'
-                                    }}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
+        <div className="app-container">
+            <NavigationBar onLogout={onLogout} />
+            <div className="main-content">
+                <LeftSidebar
+                    activeSection={activeSection}
+                    onNavigate={handleNavigate}
+                    isCollapsed={isLeftSidebarCollapsed}
+                    onToggle={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
+                />
 
-                {/* Main Chat Area */}
-                <main className="content">
-                    {selectedUser ? (
-                        <div className="chat-container">
-                            <div className="chat-header">
-                                <h6 className="m-3">
-                                    Chatting with {selectedUser.name}
-                                    <span className="ms-2" style={{ fontSize: '0.8rem', color: getStatusColor(selectedUser.status || 'offline') }}>
-                                        ● {selectedUser.status}
-                                    </span>
-                                </h6>
-                            </div>
-                            <div className="messages">
-                                {filteredMessages.map(msg => (
-                                    <div key={msg.id} className={`message ${msg.senderId === JSON.parse(localStorage.getItem('currentUser') || '{}').id ? 'sent' : 'received'}`}>
-                                        <div className="message-content">{msg.content}</div>
-                                        <div className="message-time">
-                                            {new Date(msg.timestamp).toLocaleTimeString()}
+                <main className="chat-main">
+                    {activeSection === 'chats' ? (
+                        selectedUser ? (
+                            <div className="chat-area">
+                                <div className="chat-header">
+                                    <div className="user-info">
+                                        <div className="user-avatar">
+                                            <FontAwesomeIcon icon={faUser} />
+                                        </div>
+                                        <div className="user-details">
+                                            <h6>{selectedUser.first_name} {selectedUser.last_name}</h6>
+                                            <span className="status">Active now</span>
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+
+                                <div className="messages-container">
+                                    {messages.map(msg => (
+                                        <div
+                                            key={msg.id}
+                                            className={`message ${msg.sender_id === currentUser.id ? 'sent' : 'received'}`}
+                                        >
+                                            <div className="message-bubble">
+                                                <p>{msg.message}</p>
+                                                <span className="message-time">
+                                                    {new Date(msg.created_at).toLocaleTimeString([], {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div ref={messagesEndRef} />
+                                </div>
+
+                                <div className="message-input-container">
+                                    <input
+                                        type="text"
+                                        placeholder="Type your message..."
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                    />
+                                    <button
+                                        className="send-button"
+                                        onClick={handleSendMessage}
+                                        disabled={!newMessage.trim()}
+                                    >
+                                        Send
+                                    </button>
+                                </div>
                             </div>
-                            <div className="message-input">
-                                <input
-                                    type="text"
-                                    placeholder="Type a message..."
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                />
-                                <button className="btn btn-primary" onClick={handleSendMessage}>
-                                    Send
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="chat-container d-flex align-items-center justify-content-center">
-                            <div className="text-center text-muted">
-                                <FontAwesomeIcon icon={faUser} size="3x" className="mb-3" />
+                        ) : (
+                            <div className="empty-chat">
+                                <FontAwesomeIcon icon={faComments} size="3x" />
                                 <h5>Select a contact to start chatting</h5>
                             </div>
+                        )
+                    ) : (
+                        <div className="empty-chat">
+                            <FontAwesomeIcon icon={faComments} size="3x" />
+                            <h5>Select a contact to start chatting</h5>
                         </div>
                     )}
                 </main>
 
-                {/* Right Sidebar - Online Users */}
-                <div className="right-sidebar">
-                    <div className="sidebar-header">
-                        <h5 className="m-3">Online Users</h5>
+                {activeSection === 'chats' && (
+                    <div className="users-sidebar">
+                        <RightSidebar
+                            selectedUser={selectedUser}
+                            onSelectUser={setSelectedUser}
+                            isCollapsed={false}
+                            onGetConversation={getConversation}
+                        />
                     </div>
-                    <div className="online-users">
-                        {dummyUsers.filter(user => user.status === 'online').map(user => (
-                            <div key={user.id} className="user-item">
-                                <FontAwesomeIcon icon={faUser} className="me-2" />
-                                <span>{user.name}</span>
-                                <FontAwesomeIcon
-                                    icon={faCircle}
-                                    className="ms-auto"
-                                    style={{ color: '#28a745', fontSize: '0.5rem' }}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                )}
             </div>
-            <Footer />
         </div>
     );
 };

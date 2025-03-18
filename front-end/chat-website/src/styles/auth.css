@@ -1,0 +1,19 @@
+.input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    color: #495057;
+}
+
+.input-group-text:hover {
+    color: #0056b3;
+}
+
+/* For the password toggle icon */
+.input-group-text[role="button"] {
+    cursor: pointer;
+    user-select: none;
+}
+
+.input-group-text[role="button"]:hover {
+    background-color: #e9ecef;
+} 

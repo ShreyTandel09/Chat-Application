@@ -3,6 +3,7 @@ node_modules/
 /front-end/node_modules/
 /back-end/node_modules/
 /back-end/chat_app/venv/
+/back-end/chat-app-nestjs/node_modules/
 __pycache__/
 *.py[cod]
 
@@ -13,12 +14,14 @@ __pycache__/
 .env.development
 .env.test
 .env.production
+!.env.example
 
 # Build outputs
 /front-end/build/
 /front-end/dist/
 /back-end/build/
 /back-end/dist/
+/back-end/chat-app-nestjs/dist/
 
 # IDE specific files
 .idea/
@@ -41,9 +44,14 @@ static/
 htmlcov/
 .pytest_cache/
 
+# NestJS specific
+/back-end/chat-app-nestjs/.env
+/back-end/chat-app-nestjs/dist
+/back-end/chat-app-nestjs/node_modules
+
 # Misc
 *.bak
 *.tmp
 *.temp
 .DS_Store
-Thumbs.db 
+Thumbs.db

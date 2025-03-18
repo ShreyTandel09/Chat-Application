@@ -1,16 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircle } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { User } from '../../types';
+import { userService } from '../../services/api/users/userService';
+import { chatService } from '../../services/api/chat/chatService';
+import { useDispatch, useSelector } from 'react-redux';
+import { setConversations } from '../../redux/slices/chat/conversationSlice';
 
-const RightSidebar: React.FC = () => {
-    const activeUsers: User[] = [
-        { id: 1, name: 'John Doe', status: 'online' },
-        { id: 2, name: 'Jane Smith', status: 'away' },
-        { id: 3, name: 'Mike Johnson', status: 'offline' },
-    ];
+interface RightSidebarProps {
+    selectedUser: User | null;
+    onSelectUser: (user: User) => void;
+    isCollapsed: boolean;
+    onGetConversation: (id: number) => void;
+}
 
-    const getStatusColor = (status: 'online' | 'away' | 'offline'): string => {
+const RightSidebar: React.FC<RightSidebarProps> = ({
+    selectedUser,
+    onSelectUser,
+    onGetConversation,
+}) => {
+    const dispatch = useDispatch();
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const currentUser = useSelector((state: any) => state.auth.currentUser);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setLoading(true);
+                const response = await userService.getAllUsers();
+                setUsers(response.data.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                setLoading(false);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    const searchUsers = async (searchTerm: string) => {
+        const response = await userService.searchUsers(searchTerm);
+        setUsers(response.data.data);
+    };
+
+    const createConversation = async (user: User) => {
+        const data = {
+            clientId1: user.id,
+            clientId2: currentUser.id,
+        };
+        try {
+            const response = await chatService.createConversation(data);
+            dispatch(setConversations(response.data));
+
+            // Join the conversation room via socket
+            chatService.joinConversation(response.data.id);
+
+            // Get conversation history
+            onGetConversation(response.data.id);
+        } catch (error) {
+            console.error('Error creating conversation:', error);
+        }
+    };
+
+    const getStatusColor = (status: string) => {
         switch (status) {
             case 'online': return '#28a745';
             case 'away': return '#ffc107';
@@ -19,18 +72,39 @@ const RightSidebar: React.FC = () => {
     };
 
     return (
-        <div className="right-sidebar">
-            <h5 className="mb-3">Active Users</h5>
-            <div className="active-users">
-                {activeUsers.map(user => (
-                    <div key={user.id} className="d-flex align-items-center mb-2">
-                        <FontAwesomeIcon
-                            icon={faCircle}
-                            style={{ color: getStatusColor(user.status || 'offline') }}
-                            className="me-2"
-                            size="xs"
-                        />
-                        <span>{user.name}</span>
+        <div className="users-list">
+            <div className="sidebar-header">
+                <h5 className="m-3">Users</h5>
+                <div className="search-container">
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        className="search-input"
+                        onChange={(e) => {
+                            searchUsers(e.target.value);
+                        }}
+                    />
+                </div>
+            </div>
+            <div className="users-container">
+                {users.map((user: User) => (
+                    <div
+                        key={user.id}
+                        className={`user-item ${selectedUser?.id === user.id ? 'active' : ''}`}
+                        onClick={() => {
+                            onSelectUser(user);
+                            createConversation(user);
+                        }}
+                    >
+                        <div className="user-avatar">
+                            <FontAwesomeIcon icon={faUser} />
+                        </div>
+                        <div className="user-info">
+                            <div className="user-name">{user.first_name} {user.last_name}</div>
+                            <div className="user-status">
+                                {user.status === 'online' ? 'Active now' : 'Offline'}
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>

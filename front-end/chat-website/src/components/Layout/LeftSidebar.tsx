@@ -1,33 +1,49 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faUser } from '@fortawesome/free-solid-svg-icons';
-import { User } from '../../types';
+import {
+    faCog,
+    faCreditCard,
+    faComments,
+    faChevronLeft,
+    faChevronRight
+} from '@fortawesome/free-solid-svg-icons';
 
-const LeftSidebar: React.FC = () => {
-    const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+interface LeftSidebarProps {
+    isCollapsed: boolean;
+    onNavigate: (section: 'chats' | 'settings' | 'payments') => void;
+    activeSection: 'chats' | 'settings' | 'payments';
+    onToggle: () => void;
+}
 
-    const contacts: User[] = [
-        { id: 1, name: 'John Doe' },
-        { id: 2, name: 'Jane Smith' },
-        { id: 3, name: 'Mike Johnson' },
+const LeftSidebar: React.FC<LeftSidebarProps> = ({
+    isCollapsed,
+    onNavigate,
+    activeSection,
+    onToggle
+}) => {
+
+    const navigationItems = [
+        { id: 'chats', icon: faComments, label: 'Chats' },
+        { id: 'settings', icon: faCog, label: 'Settings' },
+        { id: 'payments', icon: faCreditCard, label: 'Payments' }
     ];
 
     return (
-        <div className={`left-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-            <div className="sidebar-toggle" onClick={() => setIsCollapsed(!isCollapsed)}>
-                <FontAwesomeIcon icon={faBars} />
+        <div className={`navigation-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+            <div className="nav-items">
+                {navigationItems.map(item => (
+                    <div
+                        key={item.id}
+                        className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
+                        onClick={() => onNavigate(item.id as 'chats' | 'settings' | 'payments')}
+                    >
+                        <FontAwesomeIcon icon={item.icon} />
+                        {!isCollapsed && <span className="nav-label">{item.label}</span>}
+                    </div>
+                ))}
             </div>
-            <div className="sidebar-content">
-                <div className="contacts-list">
-                    {contacts.map(contact => (
-                        <div key={contact.id} className="contact-item">
-                            <FontAwesomeIcon icon={faUser} />
-                            <span className={isCollapsed ? 'd-none' : 'ms-2'}>
-                                {contact.name}
-                            </span>
-                        </div>
-                    ))}
-                </div>
+            <div className="nav-toggle" onClick={onToggle}>
+                <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronLeft} />
             </div>
         </div>
     );

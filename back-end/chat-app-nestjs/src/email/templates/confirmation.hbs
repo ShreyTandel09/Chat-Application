@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Email Verification</title>
+    <style>
+      body { margin: 0; padding: 0; font-family: Arial, sans-serif;
+      background-color: #f4f4f4; } .container { max-width: 600px; margin: 0
+      auto; padding: 20px; } .email-wrapper { background-color: #ffffff;
+      border-radius: 8px; padding: 40px; box-shadow: 0 2px 4px rgba(0, 0, 0,
+      0.1); } .logo { text-align: center; margin-bottom: 30px; } h1 { color:
+      #333333; font-size: 24px; margin-bottom: 20px; text-align: center; } p {
+      color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px; }
+      .button { display: inline-block; background-color: #4CAF50; color: #ffffff
+      !important; text-decoration: none; padding: 12px 30px; border-radius: 5px;
+      font-weight: bold; margin: 20px 0; text-align: center; } .button:hover {
+      background-color: #45a049; } .footer { text-align: center; margin-top:
+      30px; padding-top: 20px; border-top: 1px solid #eeeeee; color: #999999;
+      font-size: 14px; } .warning { font-size: 13px; color: #999999; font-style:
+      italic; }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='email-wrapper'>
+        <div class='logo'>
+          <h2 style='color: #4CAF50;'>Chat App</h2>
+        </div>
+
+        <h1>Verify Your Email Address</h1>
+
+        <p>Hello!</p>
+
+        <p>Thank you for signing up. To complete your registration and start
+          using Chat App, please verify your email address by clicking the
+          button below:</p>
+
+        <div style='text-align: center;'>
+          <a href='{{verifyUrl}}' class='button'>Verify Email Address</a>
+        </div>
+
+        <p class='warning'>This verification link will expire in 24 hours. If
+          you did not create an account, no further action is required.</p>
+
+        <div class='footer'>
+          <p>If the button doesn't work, copy and paste this link into your
+            browser:</p>
+          <p style='font-size: 12px; word-break: break-all;'>{{verifyUrl}}</p>
+          <p>© 2024 Chat App. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
