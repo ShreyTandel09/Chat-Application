@@ -36,6 +36,7 @@ show_usage() {
     echo -e "  clean                     Clean all dependencies (node_modules)"
     echo -e "  build                     Build all projects"
     echo -e "  start                     Start all projects"
+    echo -e "  dev                       Start both frontend and backend in development mode"
     echo -e "  frontend                  Run commands only for frontend"
     echo -e "  backend                   Run commands only for backend"
     echo -e "  docker                    Manage Docker environments"
@@ -44,6 +45,7 @@ show_usage() {
     echo -e "  ./project.sh install                    # Install all dependencies in development mode"
     echo -e "  ./project.sh -e production install      # Install all dependencies in production mode"
     echo -e "  ./project.sh frontend install           # Install only frontend dependencies"
+    echo -e "  ./project.sh dev                        # Start both frontend and backend in development mode"
     echo -e "  ./project.sh docker start               # Start Docker containers"
 }
 
@@ -373,6 +375,49 @@ manage_docker() {
     esac
 }
 
+# Function to start both frontend and backend in development mode
+start_dev_mode() {
+    log "info" "Starting both frontend and backend in development mode..."
+    
+    # Check if tmux is installed
+    if command_exists tmux; then
+        # Start a new tmux session
+        tmux new-session -d -s chat-app
+        
+        # Split the window horizontally
+        tmux split-window -h
+        
+        # Run frontend in the left pane
+        tmux send-keys -t chat-app:0.0 "cd $FRONTEND_DIR && npm run start" C-m
+        
+        # Run backend in the right pane
+        tmux send-keys -t chat-app:0.1 "cd $BACKEND_NESTJS_DIR && npm run start:dev" C-m
+        
+        # Attach to the tmux session
+        tmux attach-session -t chat-app
+        
+        log "success" "Development servers started in tmux session"
+    else
+        # Alternative method using background processes if tmux is not available
+        log "warning" "tmux not found, using background processes instead"
+        log "info" "Starting backend in the background..."
+        
+        # Start the backend in the background
+        (cd "$BACKEND_NESTJS_DIR" && npm run start:dev) &
+        BACKEND_PID=$!
+        
+        # Wait a moment to allow backend to start
+        sleep 5
+        
+        log "info" "Starting frontend..."
+        # Start the frontend in the foreground
+        cd "$FRONTEND_DIR" && npm run start
+        
+        # Kill the backend process when the frontend is stopped
+        kill $BACKEND_PID
+    fi
+}
+
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -389,7 +434,7 @@ while [[ $# -gt 0 ]]; do
             show_usage
             exit 0
             ;;
-        frontend|backend|install|update|clean|build|start|docker)
+        frontend|backend|install|update|clean|build|start|docker|dev)
             break
             ;;
         *)
@@ -479,6 +524,10 @@ case $1 in
         fi
         
         manage_docker "$2"
+        ;;
+    "dev")
+        # Start both frontend and backend in development mode
+        start_dev_mode
         ;;
     *)
         log "error" "Unknown command: $1"
